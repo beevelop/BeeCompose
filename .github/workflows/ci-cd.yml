@@ -194,7 +194,7 @@ jobs:
             2>/dev/null || true
 
       - name: Upload lint results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: dclint-results
@@ -718,7 +718,7 @@ jobs:
           echo "safe_name=${SAFE_NAME}" >> $GITHUB_OUTPUT
 
       - name: Upload individual scan result
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: cve-scan-${{ steps.parse.outputs.safe_name }}
           path: ${{ steps.parse.outputs.safe_name }}.json
@@ -842,7 +842,7 @@ jobs:
           echo "CVE scan completed - report generated (non-blocking)"
 
       - name: Upload aggregated results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: cve-scan-results
           path: |
@@ -1021,7 +1021,7 @@ jobs:
           fi
 
       - name: Upload test result
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-result-${{ matrix.service }}
@@ -1119,7 +1119,7 @@ jobs:
           fi
 
       - name: Upload aggregated results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: docker-compose-test-results
           path: |
