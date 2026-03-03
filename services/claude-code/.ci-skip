@@ -1,0 +1,2 @@
+# Skip CI testing for this service
+# Reason: Requires valid Anthropic API key or OAuth token to start claude remote-control process
