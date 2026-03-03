@@ -3,6 +3,12 @@
 All notable changes to BeeCompose will be documented in this file.
 
 
+## [26.3.3](https://github.com/beevelop/BeeCompose/compare/v26.3.2...v26.3.3) (2026-03-03)
+
+### Refactoring
+
+* **claude-code:** update configuration for OAuth login and remove API key options ([1ee3530](https://github.com/beevelop/BeeCompose/commit/1ee353047aa9c1dabd4c5559e04278bdfc12ea04))
+
 ## [26.3.2](https://github.com/beevelop/BeeCompose/compare/v26.3.1...v26.3.2) (2026-03-03)
 
 ### Bug Fixes
