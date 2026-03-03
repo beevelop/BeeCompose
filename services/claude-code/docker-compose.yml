@@ -6,11 +6,11 @@ services:
     volumes:
       - claude_home:/opt/claude
       - claude_workspace:/workspace
-      - ${DEPLOY_KEY_PATH:-/dev/null}:/run/secrets/deploy_key:ro
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:-}
       - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-}
+      - DEPLOY_KEY=${DEPLOY_KEY:-}
       - GIT_REPO=${GIT_REPO:-}
       - GIT_BRANCH=${GIT_BRANCH:-}
       - GIT_USER_NAME=${GIT_USER_NAME:-}
