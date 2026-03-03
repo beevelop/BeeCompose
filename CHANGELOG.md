@@ -3,6 +3,21 @@
 All notable changes to BeeCompose will be documented in this file.
 
 
+## [26.3.0](https://github.com/beevelop/BeeCompose/compare/v26.1.7...v26.3.0) (2026-03-03)
+
+### Features
+
+* **claude-code:** add new service configuration and documentation for Claude Code ([fba76a8](https://github.com/beevelop/BeeCompose/commit/fba76a81e1d07d020f21bac961300cd239a28210))
+
+### Maintenance
+
+* **claude-code:** comment out git repository and identity fields in example env file ([aca21f2](https://github.com/beevelop/BeeCompose/commit/aca21f2e7d9e820f52a468528ec66ce0192a3b5a))
+
+### CI/CD
+
+* bump actions/download-artifact from 7 to 8 ([#9](https://github.com/beevelop/BeeCompose/issues/9)) ([d550094](https://github.com/beevelop/BeeCompose/commit/d550094dfa128506d9dc00d935f9f05a345b547a))
+* bump actions/upload-artifact from 6 to 7 ([#8](https://github.com/beevelop/BeeCompose/issues/8)) ([d2bee89](https://github.com/beevelop/BeeCompose/commit/d2bee89cf50f63f5538713001a279b6e8d3c01bf))
+
 ## [26.1.7](https://github.com/beevelop/BeeCompose/compare/v26.1.6...v26.1.7) (2026-01-24)
 
 ### Features
