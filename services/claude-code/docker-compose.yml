@@ -4,11 +4,9 @@ services:
     image: beevelop/claude:${CLAUDE_CODE_VERSION:-latest}
     container_name: claude-code
     volumes:
-      - claude_home:/opt/claude
+      - claude_config:/home/node/.claude
       - claude_workspace:/workspace
     environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:-}
       - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-}
       - CLAUDE_PERMISSION_MODE=${CLAUDE_PERMISSION_MODE:-acceptEdits}
       - DEPLOY_KEY_B64=${DEPLOY_KEY_B64:-}
@@ -34,8 +32,8 @@ services:
     stdin_open: true
 
 volumes:
-  claude_home:
-    name: ${COMPOSE_PROJECT_NAME:-claude-code}_home
+  claude_config:
+    name: ${COMPOSE_PROJECT_NAME:-claude-code}_config
   claude_workspace:
     name: ${COMPOSE_PROJECT_NAME:-claude-code}_workspace
 

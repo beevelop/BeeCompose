@@ -51,24 +51,40 @@ docker compose logs -f
 docker compose down
 ```
 
+## First Launch -- Interactive Login
+
+Remote control mode requires an OAuth login (API keys are **not** supported). On first launch, you must attach to the container and complete the login flow:
+
+1. **Start the container** (see Quick Start above).
+
+2. **Attach to the running container:**
+   ```bash
+   docker attach claude-code
+   ```
+
+3. **Complete the OAuth login** -- the entrypoint will automatically run `claude login`. Follow the URL printed in the terminal to authenticate in your browser.
+
+4. **After login succeeds**, press `Ctrl+C` to continue. The entrypoint will then launch `claude remote-control`.
+
+5. **Detach from the container** with `Ctrl+P` then `Ctrl+Q` (Docker's detach sequence). The container continues running in the background.
+
+Subsequent container restarts will use the persisted credentials and skip the login step entirely.
+
+## Credential Storage
+
+Claude Code stores its credentials in these locations inside the container:
+
+| Path | Purpose |
+|------|---------|
+| `/home/node/.claude/.credentials.json` | OAuth tokens (access + refresh) |
+| `/home/node/.claude.json` | Account metadata and onboarding state |
+| `/home/node/.claude/` | Full config directory (credentials, settings, history) |
+
+To persist credentials across container restarts, a volume is mounted at `/home/node/.claude` (the `claude_config` volume in docker-compose.yml).
+
+The image pre-seeds `/home/node/.claude.json` with onboarding state so Claude Code does not prompt for initial setup.
+
 ## Configuration
-
-### Authentication
-
-You need **one** of the following:
-
-| Variable | Description |
-|----------|-------------|
-| `ANTHROPIC_API_KEY` | Anthropic API key (charges API account) |
-| `CLAUDE_CODE_OAUTH_TOKEN` | OAuth token for Claude Pro/Max subscription |
-
-**API Key** is recommended for automation. Get one from [console.anthropic.com](https://console.anthropic.com/).
-
-**OAuth Token** bills against your Claude subscription instead of API credits. Generate once on a trusted machine:
-
-```bash
-claude setup-token
-```
 
 ### Git Repository
 
@@ -105,7 +121,7 @@ The deploy key is base64-encoded so it fits on a single line in the `.env` file.
 
 On first start, if `GIT_REPO` is set and `/workspace` is empty, the entrypoint clones the repository. On subsequent restarts the existing clone is reused.
 
-Without a deploy key, the service still works for general Claude Code usage — git features are simply unavailable.
+Without a deploy key, the service still works for general Claude Code usage -- git features are simply unavailable.
 
 ### Optional Settings
 
@@ -113,7 +129,7 @@ Without a deploy key, the service still works for general Claude Code usage — 
 |----------|---------|-------------|
 | `ANTHROPIC_MODEL` | *(Claude default)* | Override the default model |
 | `CLAUDE_PERMISSION_MODE` | `acceptEdits` | Permission mode for `remote-control` (see below) |
-| `INIT_COMMAND` | *(empty)* | One-time setup command (runs once, persisted via stamp file) |
+| `INIT_COMMAND` | *(empty)* | One-time setup command (runs once on first launch, tracked via stamp file) |
 | `CLAUDE_EXTRA_ARGS` | *(empty)* | Extra flags for `claude remote-control` |
 
 ### Permission Modes
@@ -124,8 +140,8 @@ Controls what Claude Code can do without asking for confirmation:
 |------|----------|
 | `default` | Prompts for all file edits and commands |
 | `acceptEdits` | Auto-approves file edits, prompts for shell commands **(default)** |
-| `bypassPermissions` | Full autonomous / YOLO mode — no prompts at all |
-| `plan` | Read-only planning mode — no edits or commands |
+| `bypassPermissions` | Full autonomous / YOLO mode -- no prompts at all |
+| `plan` | Read-only planning mode -- no edits or commands |
 
 To run fully autonomous:
 ```bash
@@ -134,7 +150,7 @@ CLAUDE_PERMISSION_MODE=bypassPermissions
 
 ### Init Command
 
-The `INIT_COMMAND` variable lets you install additional tools into the container on first boot. It runs once and is tracked via a stamp file in the Claude home volume, so it won't re-run on subsequent container restarts.
+The `INIT_COMMAND` variable lets you install additional tools into the container on first boot. It runs once and is tracked via a stamp file in the Claude config volume, so it won't re-run on subsequent container restarts.
 
 ```bash
 # Example: Install Python and build tools
@@ -145,7 +161,7 @@ INIT_COMMAND=apt-get update && apt-get install -y build-essential python3 python
 
 | Volume | Container Path | Purpose |
 |--------|---------------|---------|
-| `claude_home` | `/opt/claude` | Claude config, credentials, history |
+| `claude_config` | `/home/node/.claude` | Claude credentials, config, and history (persists login across restarts) |
 | `claude_workspace` | `/workspace` | Project files (auto-cloned from `GIT_REPO`) |
 
 ## Connecting
