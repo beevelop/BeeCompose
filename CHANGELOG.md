@@ -3,6 +3,17 @@
 All notable changes to BeeCompose will be documented in this file.
 
 
+## [26.3.1](https://github.com/beevelop/BeeCompose/compare/v26.3.0...v26.3.1) (2026-03-03)
+
+### Bug Fixes
+
+* **claude-code:** use deploy key path as volume mount ([b73ee0e](https://github.com/beevelop/BeeCompose/commit/b73ee0e92d9775c18b40a22c908ab7c31dae6dfb))
+* **claude-code:** use ENV for ssh deployment key ([0bc31d6](https://github.com/beevelop/BeeCompose/commit/0bc31d6e1fb1946f539d4596cd92491241ebd02b))
+
+### Maintenance
+
+* **claude-code:** add .ci-skip file to skip CI testing for services ([84940b0](https://github.com/beevelop/BeeCompose/commit/84940b0b8a929ecae6e198f8d3721cb4123e4f08))
+
 ## [26.3.0](https://github.com/beevelop/BeeCompose/compare/v26.1.7...v26.3.0) (2026-03-03)
 
 ### Features
