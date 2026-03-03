@@ -1,0 +1,44 @@
+name: claude-code
+services:
+  claude-code:
+    image: beevelop/claude:${CLAUDE_CODE_VERSION:-latest}
+    container_name: claude-code
+    volumes:
+      - claude_home:/opt/claude
+      - claude_workspace:/workspace
+    secrets:
+      - deploy_key
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:-}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-}
+      - GIT_REPO=${GIT_REPO:-}
+      - GIT_BRANCH=${GIT_BRANCH:-}
+      - GIT_USER_NAME=${GIT_USER_NAME:-}
+      - GIT_USER_EMAIL=${GIT_USER_EMAIL:-}
+      - INIT_COMMAND=${INIT_COMMAND:-}
+      - CLAUDE_EXTRA_ARGS=${CLAUDE_EXTRA_ARGS:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'claude remote-control' > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file: "50"
+    tty: true
+    stdin_open: true
+
+volumes:
+  claude_home:
+    name: ${COMPOSE_PROJECT_NAME:-claude-code}_home
+  claude_workspace:
+    name: ${COMPOSE_PROJECT_NAME:-claude-code}_workspace
+
+secrets:
+  deploy_key:
+    file: ${DEPLOY_KEY_PATH:-/dev/null}

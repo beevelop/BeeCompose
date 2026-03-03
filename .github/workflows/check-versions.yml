@@ -71,6 +71,7 @@ jobs:
             # Format: [service]="registry/image"
             ["bitwarden"]="vaultwarden/server"
             ["cabot"]="cabotapp/cabot"
+            ["claude-code"]="beevelop/claude"
             ["cloudflared"]="cloudflare/cloudflared"
             ["confluence"]="atlassian/confluence"
             ["crowd"]="atlassian/crowd"

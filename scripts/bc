@@ -439,6 +439,7 @@ cmd_list() {
   echo ""
   echo "  bitwarden         - Self-hosted password manager (Vaultwarden)"
   echo "  cabot             - Monitoring and alerting platform"
+  echo "  claude-code       - Remote Claude Code with remote control"
   echo "  cloudflared       - Cloudflare Tunnel for zero-trust access"
   echo "  confluence        - Atlassian team collaboration and wiki"
   echo "  crowd             - Atlassian SSO and identity management"

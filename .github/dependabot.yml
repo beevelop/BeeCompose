@@ -124,6 +124,21 @@ updates:
 
   # DevOps Tools
   - package-ecosystem: "docker-compose"
+    directory: "/services/claude-code"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "05:00"
+      timezone: "UTC"
+    commit-message:
+      prefix: "Claude Code"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "devops"
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: "docker-compose"
     directory: "/services/gitlab"
     schedule:
       interval: "weekly"

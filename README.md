@@ -16,6 +16,7 @@ Click on a service name to view its detailed README with configuration options, 
 |---------|-------------|--------------|
 | [bitwarden](services/bitwarden/README.md) | Self-hosted password manager (Vaultwarden) | `ghcr.io/beevelop/bitwarden` |
 | [cabot](services/cabot/README.md) | Monitoring and alerting platform | `ghcr.io/beevelop/cabot` |
+| [claude-code](services/claude-code/README.md) | Remote Claude Code instance with remote control | `ghcr.io/beevelop/claude-code` |
 | [cloudflared](services/cloudflared/README.md) | Cloudflare Tunnel for zero-trust access | `ghcr.io/beevelop/cloudflared` |
 | [confluence](services/confluence/README.md) | Atlassian team collaboration and wiki | `ghcr.io/beevelop/confluence` |
 | [crowd](services/crowd/README.md) | Atlassian SSO and identity management | `ghcr.io/beevelop/crowd` |
