@@ -76,7 +76,7 @@ To let Claude Code clone a repo and push changes, set up SSH deploy key authenti
 
 1. Generate a deploy key:
    ```bash
-   ssh-keygen -t ed25519 -f deploy_key -N ""
+   ssh-keygen -t ed25519 -f ~/claude-code/deploy_key -N ""
    ```
 
 2. Add `deploy_key.pub` as a **Deploy key** to your GitHub repo (Settings > Deploy keys > Add deploy key). Enable **Allow write access**.
@@ -86,7 +86,7 @@ To let Claude Code clone a repo and push changes, set up SSH deploy key authenti
    GIT_REPO=git@github.com:your-org/your-repo.git
    GIT_USER_NAME=Claude Code
    GIT_USER_EMAIL=claude@example.com
-   DEPLOY_KEY_PATH=./deploy_key
+   DEPLOY_KEY_PATH=/root/claude-code/deploy_key
    ```
 
 | Variable | Default | Description |
@@ -95,9 +95,9 @@ To let Claude Code clone a repo and push changes, set up SSH deploy key authenti
 | `GIT_BRANCH` | *(repo default)* | Branch to clone |
 | `GIT_USER_NAME` | *(empty)* | Git commit author name |
 | `GIT_USER_EMAIL` | *(empty)* | Git commit author email |
-| `DEPLOY_KEY_PATH` | `/dev/null` | Path to SSH private key file |
+| `DEPLOY_KEY_PATH` | `/dev/null` | Absolute path to SSH private key file |
 
-The deploy key is injected via Docker Compose [secrets](https://docs.docker.com/compose/how-tos/use-secrets/), which mounts it at `/run/secrets/deploy_key` with restricted permissions. The entrypoint copies it to the SSH config directory automatically.
+The deploy key is bind-mounted into the container at `/run/secrets/deploy_key` (read-only). The entrypoint copies it to the SSH config directory automatically. Use an **absolute path** for `DEPLOY_KEY_PATH` — relative paths won't resolve correctly with OCI artifact deployments.
 
 On first start, if `GIT_REPO` is set and `/workspace` is empty, the entrypoint clones the repository. On subsequent restarts the existing clone is reused.
 

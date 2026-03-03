@@ -6,8 +6,7 @@ services:
     volumes:
       - claude_home:/opt/claude
       - claude_workspace:/workspace
-    secrets:
-      - deploy_key
+      - ${DEPLOY_KEY_PATH:-/dev/null}:/run/secrets/deploy_key:ro
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:-}
@@ -39,6 +38,3 @@ volumes:
   claude_workspace:
     name: ${COMPOSE_PROJECT_NAME:-claude-code}_workspace
 
-secrets:
-  deploy_key:
-    file: ${DEPLOY_KEY_PATH:-/dev/null}
