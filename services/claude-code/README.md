@@ -6,7 +6,7 @@ Remote [Claude Code](https://code.claude.com/) instance with remote control supp
 
 1. Copy `.env.example` to `.env.production` and fill in your values.
 
-2. **For git access (optional):** Generate an SSH deploy key, add it to your repo, and set `DEPLOY_KEY_PATH` in your env file. See [Git Repository](#git-repository) below.
+2. **For git access (optional):** Generate an SSH deploy key, add it to your repo, and set `DEPLOY_KEY_B64` in your env file. See [Git Repository](#git-repository) below.
 
 ## Quick Start
 
@@ -81,22 +81,16 @@ To let Claude Code clone a repo and push changes, set up SSH deploy key authenti
 
 2. Add `deploy_key.pub` as a **Deploy key** to your GitHub repo (Settings > Deploy keys > Add deploy key). Enable **Allow write access**.
 
-3. Configure in your `.env.claude-code`:
+3. Base64-encode the private key and add it to your `.env.claude-code`:
    ```bash
-   DEPLOY_KEY=$(cat deploy_key)
-   GIT_REPO=git@github.com:your-org/your-repo.git
-   GIT_USER_NAME=Claude Code
-   GIT_USER_EMAIL=claude@example.com
+   # Encode (works on both macOS and Linux):
+   base64 < deploy_key | tr -d '\n'
    ```
-
-2. Add `deploy_key.pub` as a **Deploy key** to your GitHub repo (Settings > Deploy keys > Add deploy key). Enable **Allow write access**.
-
-3. Configure in your `.env.production`:
    ```bash
+   DEPLOY_KEY_B64=LS0tLS1CRUdJTi...  # paste the base64 output here
    GIT_REPO=git@github.com:your-org/your-repo.git
    GIT_USER_NAME=Claude Code
    GIT_USER_EMAIL=claude@example.com
-   DEPLOY_KEY_PATH=/root/claude-code/deploy_key
    ```
 
 | Variable | Default | Description |
@@ -105,9 +99,9 @@ To let Claude Code clone a repo and push changes, set up SSH deploy key authenti
 | `GIT_BRANCH` | *(repo default)* | Branch to clone |
 | `GIT_USER_NAME` | *(empty)* | Git commit author name |
 | `GIT_USER_EMAIL` | *(empty)* | Git commit author email |
-| `DEPLOY_KEY` | *(empty)* | SSH private key content (ed25519) |
+| `DEPLOY_KEY_B64` | *(empty)* | Base64-encoded SSH private key (ed25519) |
 
-The deploy key content is passed via environment variable. The entrypoint writes it to `~/.ssh/id_ed25519` with restricted permissions at startup. Set it in your `.env.claude-code` file using command substitution: `DEPLOY_KEY=$(cat deploy_key)`.
+The deploy key is base64-encoded so it fits on a single line in the `.env` file. The entrypoint decodes it and writes it to `~/.ssh/id_ed25519` with restricted permissions at startup.
 
 On first start, if `GIT_REPO` is set and `/workspace` is empty, the entrypoint clones the repository. On subsequent restarts the existing clone is reused.
 
@@ -118,8 +112,25 @@ Without a deploy key, the service still works for general Claude Code usage — 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `ANTHROPIC_MODEL` | *(Claude default)* | Override the default model |
+| `CLAUDE_PERMISSION_MODE` | `acceptEdits` | Permission mode for `remote-control` (see below) |
 | `INIT_COMMAND` | *(empty)* | One-time setup command (runs once, persisted via stamp file) |
 | `CLAUDE_EXTRA_ARGS` | *(empty)* | Extra flags for `claude remote-control` |
+
+### Permission Modes
+
+Controls what Claude Code can do without asking for confirmation:
+
+| Mode | Behavior |
+|------|----------|
+| `default` | Prompts for all file edits and commands |
+| `acceptEdits` | Auto-approves file edits, prompts for shell commands **(default)** |
+| `bypassPermissions` | Full autonomous / YOLO mode — no prompts at all |
+| `plan` | Read-only planning mode — no edits or commands |
+
+To run fully autonomous:
+```bash
+CLAUDE_PERMISSION_MODE=bypassPermissions
+```
 
 ### Init Command
 
