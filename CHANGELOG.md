@@ -3,6 +3,12 @@
 All notable changes to BeeCompose will be documented in this file.
 
 
+## [26.3.2](https://github.com/beevelop/BeeCompose/compare/v26.3.1...v26.3.2) (2026-03-03)
+
+### Bug Fixes
+
+* **claude-code:** update README and .env.example for SSH deploy key configuration ([3669867](https://github.com/beevelop/BeeCompose/commit/3669867e04c518c5df12079d163d673e5cdfe254))
+
 ## [26.3.1](https://github.com/beevelop/BeeCompose/compare/v26.3.0...v26.3.1) (2026-03-03)
 
 ### Bug Fixes
