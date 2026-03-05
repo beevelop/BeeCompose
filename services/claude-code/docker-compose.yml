@@ -4,18 +4,18 @@ services:
     image: beevelop/claude:${CLAUDE_CODE_VERSION:-latest}
     container_name: claude-code
     volumes:
-      - claude_config:/home/node/.claude
+      - claude_config:/home/developer/.claude
       - claude_workspace:/workspace
     environment:
-      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-}
-      - CLAUDE_PERMISSION_MODE=${CLAUDE_PERMISSION_MODE:-acceptEdits}
-      - DEPLOY_KEY_B64=${DEPLOY_KEY_B64:-}
-      - GIT_REPO=${GIT_REPO:-}
-      - GIT_BRANCH=${GIT_BRANCH:-}
-      - GIT_USER_NAME=${GIT_USER_NAME:-}
-      - GIT_USER_EMAIL=${GIT_USER_EMAIL:-}
-      - INIT_COMMAND=${INIT_COMMAND:-}
       - CLAUDE_EXTRA_ARGS=${CLAUDE_EXTRA_ARGS:-}
+      - CLAUDE_PERMISSION_MODE=${CLAUDE_PERMISSION_MODE:-acceptEdits}
+      - CLAUDE_SESSION_NAME=${CLAUDE_SESSION_NAME:-}
+      - DEPLOY_KEY_B64=${DEPLOY_KEY_B64:-}
+      - GIT_BRANCH=${GIT_BRANCH:-}
+      - GIT_REPO=${GIT_REPO:-}
+      - GIT_USER_EMAIL=${GIT_USER_EMAIL:-}
+      - GIT_USER_NAME=${GIT_USER_NAME:-}
+      - INIT_COMMAND=${INIT_COMMAND:-}
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pgrep -f 'claude remote-control' > /dev/null || exit 1"]
@@ -28,8 +28,8 @@ services:
       options:
         max-size: "500k"
         max-file: "50"
-    tty: true
     stdin_open: true
+    tty: true
 
 volumes:
   claude_config:

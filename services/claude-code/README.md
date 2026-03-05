@@ -76,13 +76,13 @@ Claude Code stores its credentials in these locations inside the container:
 
 | Path | Purpose |
 |------|---------|
-| `/home/node/.claude/.credentials.json` | OAuth tokens (access + refresh) |
-| `/home/node/.claude.json` | Account metadata and onboarding state |
-| `/home/node/.claude/` | Full config directory (credentials, settings, history) |
+| `/home/developer/.claude/.credentials.json` | OAuth tokens (access + refresh) |
+| `/home/developer/.claude.json` | Account metadata and onboarding state |
+| `/home/developer/.claude/` | Full config directory (credentials, settings, history) |
 
-To persist credentials across container restarts, a volume is mounted at `/home/node/.claude` (the `claude_config` volume in docker-compose.yml).
+To persist credentials across container restarts, a volume is mounted at `/home/developer/.claude` (the `claude_config` volume in docker-compose.yml).
 
-The image pre-seeds `/home/node/.claude.json` with onboarding state so Claude Code does not prompt for initial setup.
+The image pre-seeds `/home/developer/.claude.json` with onboarding state so Claude Code does not prompt for initial setup.
 
 ## Configuration
 
@@ -129,6 +129,7 @@ Without a deploy key, the service still works for general Claude Code usage -- g
 |----------|---------|-------------|
 | `ANTHROPIC_MODEL` | *(Claude default)* | Override the default model |
 | `CLAUDE_PERMISSION_MODE` | `acceptEdits` | Permission mode for `remote-control` (see below) |
+| `CLAUDE_SESSION_NAME` | *(empty)* | Custom session title visible in claude.ai/code |
 | `INIT_COMMAND` | *(empty)* | One-time setup command (runs once on first launch, tracked via stamp file) |
 | `CLAUDE_EXTRA_ARGS` | *(empty)* | Extra flags for `claude remote-control` |
 
@@ -141,6 +142,7 @@ Controls what Claude Code can do without asking for confirmation:
 | `default` | Prompts for all file edits and commands |
 | `acceptEdits` | Auto-approves file edits, prompts for shell commands **(default)** |
 | `bypassPermissions` | Full autonomous / YOLO mode -- no prompts at all |
+| `dontAsk` | Don't ask, fail instead of prompting |
 | `plan` | Read-only planning mode -- no edits or commands |
 
 To run fully autonomous:
@@ -153,15 +155,15 @@ CLAUDE_PERMISSION_MODE=bypassPermissions
 The `INIT_COMMAND` variable lets you install additional tools into the container on first boot. It runs once and is tracked via a stamp file in the Claude config volume, so it won't re-run on subsequent container restarts.
 
 ```bash
-# Example: Install Python and build tools
-INIT_COMMAND=apt-get update && apt-get install -y build-essential python3 python3-pip
+# Example: Install additional Python packages
+INIT_COMMAND=pip3 install poetry
 ```
 
 ## Volumes
 
 | Volume | Container Path | Purpose |
-|--------|---------------|---------|
-| `claude_config` | `/home/node/.claude` | Claude credentials, config, and history (persists login across restarts) |
+|--------|---------------|--------|
+| `claude_config` | `/home/developer/.claude` | Claude credentials, config, and history (persists login across restarts) |
 | `claude_workspace` | `/workspace` | Project files (auto-cloned from `GIT_REPO`) |
 
 ## Connecting
@@ -170,6 +172,6 @@ Once the container is running, open Claude on iOS/Android or the web app, naviga
 
 ## Docker Image
 
-This service uses the [`beevelop/claude`](https://hub.docker.com/r/beevelop/claude) Docker image, which is based on `node:22-bookworm-slim` with Claude Code CLI pre-installed.
+This service uses the [`beevelop/claude`](https://hub.docker.com/r/beevelop/claude) Docker image, which is based on `ubuntu:24.04` with a full developer toolchain (Node.js 22, Python 3, build-essential, ripgrep, fzf, etc.) and Claude Code CLI pre-installed.
 
 Source: [github.com/beevelop/docker-claude](https://github.com/beevelop/docker-claude)
