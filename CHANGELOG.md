@@ -3,6 +3,12 @@
 All notable changes to BeeCompose will be documented in this file.
 
 
+## [26.3.4](https://github.com/beevelop/BeeCompose/compare/v26.3.3...v26.3.4) (2026-03-05)
+
+### Refactoring
+
+* **claude-code:** update environment variables and paths in configuration files ([d9eb0c5](https://github.com/beevelop/BeeCompose/commit/d9eb0c5f39d3ffb390e8df8cfb3dbd149086d942))
+
 ## [26.3.3](https://github.com/beevelop/BeeCompose/compare/v26.3.2...v26.3.3) (2026-03-03)
 
 ### Refactoring
