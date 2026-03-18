@@ -1,7 +1,7 @@
 name: crowd
 services:
   crowd:
-    image: atlassian/crowd:${CROWD_VERSION:-6.2.0-ubi9-jdk17}
+    image: atlassian/crowd:${CROWD_VERSION:-7.1.5-ubi9-jdk21}
     container_name: crowd
     depends_on:
       - postgresql

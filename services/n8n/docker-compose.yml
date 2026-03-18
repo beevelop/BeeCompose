@@ -1,7 +1,7 @@
 name: n8n
 services:
   n8n:
-    image: n8nio/n8n:${N8N_VERSION:-2.4.6}
+    image: n8nio/n8n:${N8N_VERSION:-2.12.3}
     container_name: n8n
     depends_on:
       postgres:

@@ -25,7 +25,7 @@ services:
         max-file: "50"
 
   sonarqube:
-    image: sonarqube:${SONARQUBE_VERSION:-10-community}
+    image: sonarqube:${SONARQUBE_VERSION:-2026.1-community}
     container_name: sonarqube
     depends_on:
       - database

@@ -1,7 +1,7 @@
 name: tus
 services:
   tus:
-    image: tusproject/tusd:${TUS_VERSION:-v2.8.0}
+    image: tusproject/tusd:${TUS_VERSION:-v2.9.2}
     container_name: tus
     volumes:
       - tus_data:/srv/tusd-data

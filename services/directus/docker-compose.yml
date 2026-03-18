@@ -1,7 +1,7 @@
 name: directus
 services:
   directus:
-    image: directus/directus:${DIRECTUS_VERSION:-11.14.1}
+    image: directus/directus:${DIRECTUS_VERSION:-11.16.1}
     container_name: directus
     depends_on:
       - mysql

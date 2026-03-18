@@ -1,7 +1,7 @@
 name: graylog
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTICSEARCH_VERSION:-7.17.27}
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTICSEARCH_VERSION:-7.17.29}
     container_name: graylog-elasticsearch
     volumes:
       - es_data:/usr/share/elasticsearch/data

@@ -61,7 +61,7 @@ services:
         max-file: "50"
 
   weblate:
-    image: weblate/weblate:${WEBLATE_VERSION:-5.11}
+    image: weblate/weblate:${WEBLATE_VERSION:-5.16}
     container_name: weblate
     depends_on:
       - cache

@@ -26,7 +26,7 @@ services:
         max-file: "50"
 
   gitlab:
-    image: sameersbn/gitlab:${GITLAB_VERSION:-18.8.0}
+    image: sameersbn/gitlab:${GITLAB_VERSION:-18.9.2}
     container_name: gitlab
     depends_on:
       - database

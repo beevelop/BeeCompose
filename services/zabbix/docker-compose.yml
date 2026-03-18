@@ -1,7 +1,7 @@
 name: zabbix
 services:
   database:
-    image: mariadb:${MARIADB_VERSION:-11.7}
+    image: mariadb:${MARIADB_VERSION:-12.2}
     container_name: zabbix-mariadb
     volumes:
       - mariadb_data:/var/lib/mysql

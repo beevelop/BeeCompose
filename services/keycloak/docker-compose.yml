@@ -1,7 +1,7 @@
 name: keycloak
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION:-26.2}
+    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION:-26.5.5}
     container_name: keycloak
     depends_on:
       - postgres

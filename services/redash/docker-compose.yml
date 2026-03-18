@@ -69,7 +69,7 @@ services:
         max-file: "50"
 
   server:
-    image: redash/redash:${REDASH_VERSION:-25.1.0}
+    image: redash/redash:${REDASH_VERSION:-26.3.0}
     container_name: redash-server
     depends_on:
       - postgres
@@ -102,7 +102,7 @@ services:
         max-file: "50"
 
   worker:
-    image: redash/redash:${REDASH_VERSION:-25.1.0}
+    image: redash/redash:${REDASH_VERSION:-26.3.0}
     container_name: redash-worker
     depends_on:
       - postgres
