@@ -3,6 +3,12 @@
 All notable changes to BeeCompose will be documented in this file.
 
 
+## [26.3.5](https://github.com/beevelop/BeeCompose/compare/v26.3.4...v26.3.5) (2026-03-18)
+
+### CI/CD
+
+* bump docker/login-action from 3 to 4 ([#10](https://github.com/beevelop/BeeCompose/issues/10)) ([260af5d](https://github.com/beevelop/BeeCompose/commit/260af5d4e5ddd1a460b4bfe5824b6ce066e1c4d0))
+
 ## [26.3.4](https://github.com/beevelop/BeeCompose/compare/v26.3.3...v26.3.4) (2026-03-05)
 
 ### Refactoring
