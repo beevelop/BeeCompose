@@ -22,7 +22,8 @@ EOF
 
 # 2. Create sentry.env configuration
 cat > sentry.env << 'EOF'
-SENTRY_SECRET_KEY=your-secret-key-here-generate-with-openssl-rand-hex-32
+SENTRY_SYSTEM_SECRET_KEY=your-secret-key-here-generate-with-sentry-config-generate-secret-key
+SENTRY_SECRET_KEY=your-secret-key-here-generate-with-sentry-config-generate-secret-key
 SENTRY_MEMCACHED_HOST=memcached
 SENTRY_REDIS_HOST=redis
 SENTRY_POSTGRES_HOST=postgres
@@ -52,7 +53,8 @@ EOF
 
 # 2. Create sentry.env configuration
 cat > sentry.env << 'EOF'
-SENTRY_SECRET_KEY=your-secret-key-here-generate-with-openssl-rand-hex-32
+SENTRY_SYSTEM_SECRET_KEY=your-secret-key-here-generate-with-sentry-config-generate-secret-key
+SENTRY_SECRET_KEY=your-secret-key-here-generate-with-sentry-config-generate-secret-key
 SENTRY_MEMCACHED_HOST=memcached
 SENTRY_REDIS_HOST=redis
 SENTRY_POSTGRES_HOST=postgres
@@ -91,9 +93,9 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| sentry | getsentry/sentry:24.12.0 | Main Sentry web server |
-| sentry-celery-worker | getsentry/sentry:24.12.0 | Background task processor |
-| sentry-celery-cron | getsentry/sentry:24.12.0 | Scheduled task runner |
+| sentry | getsentry/sentry:25.7.0 | Main Sentry web server |
+| sentry-celery-worker | getsentry/sentry:25.7.0 | Background task processor |
+| sentry-celery-cron | getsentry/sentry:25.7.0 | Scheduled task runner |
 | sentry-postgres | postgres:17-alpine | Primary database |
 | sentry-redis | redis:7-alpine | Cache and message broker |
 | sentry-memcached | memcached:1.6 | Session and result caching |
@@ -111,7 +113,8 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `SENTRY_SECRET_KEY` | Secret key for encryption | Generate with `openssl rand -hex 32` |
+| `SENTRY_SYSTEM_SECRET_KEY` | Secret key for encryption (25.x+) | Generate with `sentry config generate-secret-key` |
+| `SENTRY_SECRET_KEY` | Secret key legacy fallback (24.x) | Same value as `SENTRY_SYSTEM_SECRET_KEY` |
 | `SENTRY_MEMCACHED_HOST` | Memcached hostname | `memcached` |
 | `SENTRY_REDIS_HOST` | Redis hostname | `redis` |
 | `SENTRY_POSTGRES_HOST` | PostgreSQL hostname | `postgres` |
@@ -121,12 +124,13 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `sentry` |
-| `SENTRY_VERSION` | Sentry image version | `24.12.0` |
+| `SENTRY_VERSION` | Sentry image version | `25.7.0` |
 | `POSTGRES_TAG` | PostgreSQL image tag | `17-alpine` |
 | `REDIS_TAG` | Redis image tag | `7-alpine` |
 | `MEMCACHED_TAG` | Memcached image tag | `1.6` |
 | `DB_NAME` | PostgreSQL database name | `sentry` |
 | `DB_USER` | PostgreSQL username | `sentry` |
+| `SENTRY_EVENT_RETENTION_DAYS` | Days to retain events | `90` |
 
 ## Volumes
 
@@ -153,13 +157,17 @@ docker exec -it sentry sentry createuser --superuser
 
 ### Generate Secret Key
 
-If you haven't generated a secret key:
+Generate a secret key and set both `SENTRY_SYSTEM_SECRET_KEY` and `SENTRY_SECRET_KEY` in your `sentry.env`:
+
+```bash
+docker run --rm getsentry/sentry:25.7.0 sentry config generate-secret-key
+```
+
+Or with OpenSSL:
 
 ```bash
 openssl rand -hex 32
 ```
-
-Add the output to your `sentry.env` as `SENTRY_SECRET_KEY`.
 
 ### Configure Email (Optional)
 
@@ -228,7 +236,7 @@ docker exec sentry-postgres pg_dump -U sentry sentry > sentry-backup.sql
 # 1. Create a backup first
 docker exec sentry-postgres pg_dump -U sentry sentry > sentry-backup.sql
 
-# 2. Update version in .env.sentry
+# 2. Update version in .env
 # 3. Pull new images and restart
 docker compose -f oci://ghcr.io/beevelop/sentry:latest --env-file .env.sentry pull
 docker compose -f oci://ghcr.io/beevelop/sentry:latest --env-file .env.sentry up -d
@@ -236,6 +244,10 @@ docker compose -f oci://ghcr.io/beevelop/sentry:latest --env-file .env.sentry up
 # 4. Run migrations if needed
 docker exec -it sentry sentry upgrade
 ```
+
+> **⚠️ Upgrading from 24.x:** Rename `SENTRY_SECRET_KEY` to `SENTRY_SYSTEM_SECRET_KEY` in your
+> `sentry.env` (keep both during the transition). The 25.x release also introduces
+> `SENTRY_EVENT_RETENTION_DAYS` to control how long events are stored (default: 90 days).
 
 ## Troubleshooting
 
