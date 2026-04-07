@@ -1,0 +1,67 @@
+##############
+# Mail Server
+##############
+
+mail.host: 'smtp'
+# mail.port: 25
+# mail.username: ''
+# mail.password: ''
+# mail.use-tls: false
+# mail.use-ssl: false
+
+# NOTE: mail.from and mail.list-namespace are set via SENTRY_MAIL_HOST in sentry.conf.py
+# mail.from: 'sentry@example.com'
+# mail.list-namespace: 'example.com'
+
+###################
+# System Settings
+###################
+
+# Public URL prefix where Sentry is accessible (used for links in notifications etc.)
+# system.url-prefix: 'https://sentry.example.com'
+
+# Internal URL for container-to-container communication. Do not change.
+system.internal-url-prefix: 'http://web:9000'
+
+# Secret key — set via SENTRY_SYSTEM_SECRET_KEY environment variable instead.
+# system.secret-key: '!!changeme!!'
+
+################
+# File Storage
+################
+
+filestore.backend: 'filesystem'
+filestore.options:
+  location: '/data/files'
+dsym.cache-path: '/data/dsym-cache'
+releasefile.cache-path: '/data/releasefile-cache'
+
+symbolicator.enabled: true
+symbolicator.options:
+  url: "http://symbolicator:3021"
+
+transaction-events.force-disable-internal-project: true
+
+######################
+# GitHub Integration
+######################
+
+# Refer to https://develop.sentry.dev/integrations/github/ for setup instructions.
+# github-app.id: GITHUB_APP_ID
+# github-app.name: 'GITHUB_APP_NAME'
+# github-app.webhook-secret: 'GITHUB_WEBHOOK_SECRET'
+# github-app.client-id: 'GITHUB_CLIENT_ID'
+# github-app.client-secret: 'GITHUB_CLIENT_SECRET'
+# github-app.private-key: |
+#   -----BEGIN RSA PRIVATE KEY-----
+#   ...
+#   -----END RSA PRIVATE KEY-----
+
+#####################
+# Slack Integration
+#####################
+
+# Refer to https://develop.sentry.dev/integrations/slack/ for setup instructions.
+# slack.client-id: '<client id>'
+# slack.client-secret: '<client secret>'
+# slack.signing-secret: '<signing secret>'

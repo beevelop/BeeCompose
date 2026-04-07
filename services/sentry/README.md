@@ -1,270 +1,152 @@
 # Sentry
 
-> **OCI Artifact** - Deploy directly from GitHub Container Registry
-
-Self-hosted error tracking and performance monitoring platform for identifying and debugging production issues across your applications.
-
-## What is an OCI Artifact?
-
-This is a **Docker Compose OCI artifact**, not a traditional Docker image. It contains a complete docker-compose.yml configuration that you can deploy directly using Docker 25.0+.
-
-## Quick Start
-
-### Using bc CLI (Recommended)
-
-```bash
-# 1. Create environment file
-cat > .env.sentry << 'EOF'
-COMPOSE_PROJECT_NAME=sentry
-SERVICE_DOMAIN=sentry.example.com
-DB_PASS=Swordfish
-EOF
-
-# 2. Create sentry.env configuration
-cat > sentry.env << 'EOF'
-SENTRY_SECRET_KEY=your-secret-key-here-generate-with-openssl-rand-hex-32
-SENTRY_MEMCACHED_HOST=memcached
-SENTRY_REDIS_HOST=redis
-SENTRY_POSTGRES_HOST=postgres
-SENTRY_DB_NAME=sentry
-SENTRY_DB_USER=sentry
-SENTRY_DB_PASSWORD=Swordfish
-EOF
-
-# 3. Deploy
-bc sentry up
-
-# 4. Check status
-bc sentry ps
-```
-
-> **Note:** Install the bc CLI with: `curl -fsSL https://raw.githubusercontent.com/beevelop/beecompose/main/scripts/install.sh | sudo bash`
-
-### Manual Deployment
-
-```bash
-# 1. Create environment file
-cat > .env.sentry << 'EOF'
-COMPOSE_PROJECT_NAME=sentry
-SERVICE_DOMAIN=sentry.example.com
-DB_PASS=Swordfish
-EOF
-
-# 2. Create sentry.env configuration
-cat > sentry.env << 'EOF'
-SENTRY_SECRET_KEY=your-secret-key-here-generate-with-openssl-rand-hex-32
-SENTRY_MEMCACHED_HOST=memcached
-SENTRY_REDIS_HOST=redis
-SENTRY_POSTGRES_HOST=postgres
-SENTRY_DB_NAME=sentry
-SENTRY_DB_USER=sentry
-SENTRY_DB_PASSWORD=Swordfish
-EOF
-
-# 3. Deploy from GHCR
-docker compose -f oci://ghcr.io/beevelop/sentry:latest --env-file .env.sentry up -d --pull always
-
-# 4. Check status
-docker compose -f oci://ghcr.io/beevelop/sentry:latest --env-file .env.sentry ps
-```
-
-## Prerequisites
-
-- Docker 25.0+ (required for OCI artifact support)
-- Docker Compose v2.24+
-- Traefik reverse proxy (see [traefik](../traefik/))
-- Minimum 4GB RAM recommended
-
-## Dependencies
-
-This service includes all required backing stores:
-
-| Dependency | Container | Purpose |
-|------------|-----------|---------|
-| PostgreSQL | sentry-postgres | Primary database |
-| Redis | sentry-redis | Cache and message broker |
-| Memcached | sentry-memcached | Session caching |
-
-See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
+Self-hosted [Sentry](https://sentry. error and performance monitoring platform.io) 
 
 ## Architecture
 
-| Container | Image | Purpose |
-|-----------|-------|---------|
-| sentry | getsentry/sentry:24.12.0 | Main Sentry web server |
-| sentry-celery-worker | getsentry/sentry:24.12.0 | Background task processor |
-| sentry-celery-cron | getsentry/sentry:24.12.0 | Scheduled task runner |
-| sentry-postgres | postgres:17-alpine | Primary database |
-| sentry-redis | redis:7-alpine | Cache and message broker |
-| sentry-memcached | memcached:1.6 | Session and result caching |
+Sentry 26.x is a multi-service stack. All images are pulled from GitHub Container Registry (`ghcr.io`).
+
+| Layer | Services |
+|---|---|
+| **Ingress** | Relay (Traefik-fronted) |
+| **Application** | web, events/attachments consumers, task workers, sentry-cleanup |
+| **Snuba** | snuba-api + 6 Kafka consumers + replacer + subscription consumer |
+| **Symbolicator** | symbolicator + symbolicator-cleanup |
+| **Message Queue** | Kafka (KRaft mode, no ZooKeeper) |
+| **Databases** | PostgreSQL 14 + pgbouncer, ClickHouse (Altinity) |
+| **Cache** | Redis, Memcached |
+| **Mail** | SMTP (exim4) |
+| **Task Queue** | taskbroker + taskscheduler + taskworker |
+| **Profiling** (feature-complete only) | vroom + seaweedfs + vroom-cleanup |
+| **Uptime** (feature-complete only) | uptime-checker |
+
+### Profiles
+
+| Profile | Containers | RAM |
+|---|---|---|
+| `errors-only` (default) | ~26 | ~8 GB |
+| `feature-complete` | ~70 | ~16 GB |
+
+## Prerequisites
+
+- Docker 25.0+, Docker Compose v2.24+
+- Traefik running with `traefik_default` network
+
+## Deployment
+
+### 1. Clone or download the service directory
+
+All config files are managed via named Docker volumes — no bind-mounted directories are needed in the working directory alongside `docker-compose.yml`.
+
+### 2. Configure environment
+
+```bash
+cp .env.example .env.local
+# Edit .env.local with your domain and settings
+```
+
+### 3. Generate relay credentials
+
+```bash
+docker compose run --rm relay credentials generate
+```
+
+Copy the `secret_key` and `public_key` output into `relay/config.yml` in the relay config volume. On first start, Relay auto-generates credentials in the `sentry-relay-config` named volume — run:
+
+```bash
+docker compose run --rm relay credentials generate
+```
+
+Then inspect the volume to get the keys:
+
+```bash
+docker compose run --rm relay credentials show
+```
+
+### 4. Generate the Sentry secret key
+
+```bash
+docker compose run --rm web config generate-secret-key
+```
+
+Copy the output into `sentry.env` as `SENTRY_SECRET_KEY`.
+
+### 5. Run database migrations
+
+On first deploy only:
+
+```bash
+docker compose run --rm web upgrade --noinput
+```
+
+### 6. Create an admin user
+
+```bash
+docker compose run --rm web createuser --email admin@example.com --password Swordfish --superuser
+```
+
+### 7. Start the stack
+
+```bash
+# Errors-only (default, ~26 containers)
+docker compose --env-file .env --env-file .env.local up -d
+
+# Feature-complete (~70 containers)
+COMPOSE_PROFILES=feature-complete docker compose --env-file .env --env-file .env.local up -d
+```
+
+### With bc CLI
+
+```bash
+bc sentry up
+```
+
+### Direct OCI deployment
+
+```bash
+docker compose -f oci://ghcr.io/beevelop/sentry:latest --env-file .env --env-file .env.local up -d
+```
+
+## Directory Structure
+
+```
+services/sentry/
+ docker-compose.yml
+ .env                      # Image version pins (committed)
+ .env.example              # Configuration template
+ sentry.env                # Sentry runtime env vars (set SENTRY_SECRET_KEY!)
+ sentry/                   # Reference config — customize via named volume after init
+   sentry.conf.py          # Django settings reference
+   config.yml              # Sentry YAML options reference
+   entrypoint.sh           # Container entrypoint reference
+```
+
+> **Named volumes:** All runtime config is stored in Docker named volumes (`sentry-config`,
+> `sentry-relay-config`, etc.). No bind-mounted host directories are required.
 
 ## Environment Variables
 
-### Required (.env)
+| Variable | Default | Description |
+|---|---|---|
+| `SERVICE_DOMAIN` | `sentry.example.com` | Public hostname (Traefik routing) |
+| `COMPOSE_PROFILES` | `errors-only` | `errors-only` or `feature-complete` |
+| `SENTRY_EVENT_RETENTION_DAYS` | `90` | Days to retain event data |
+| `SENTRY_MAIL_HOST` | — | FQDN for outbound mail (e.g. `sentry.example.com`) |
+| `SENTRY_TASKWORKER_CONCURRENCY` | `4` | Parallel task worker processes |
+| `SENTRY_SECRET_KEY` | — | **Required.** Django secret key (set in `sentry.env`) |
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `SERVICE_DOMAIN` | Domain for Sentry | `sentry.example.com` |
-| `DB_PASS` | PostgreSQL password | `Swordfish` |
+## Upgrading from 25.x
 
-### Required (sentry.env)
+1. Back up Postgres: `docker compose exec postgres pg_dumpall -U postgres > backup.sql`
+2. Stop the stack
+3. Update images in `.env`
+4. Run migrations: `docker compose --env-file .env --env-file .env.local run --rm web upgrade --noinput`
+5. Restart
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `SENTRY_SECRET_KEY` | Secret key for encryption | Generate with `openssl rand -hex 32` |
-| `SENTRY_MEMCACHED_HOST` | Memcached hostname | `memcached` |
-| `SENTRY_REDIS_HOST` | Redis hostname | `redis` |
-| `SENTRY_POSTGRES_HOST` | PostgreSQL hostname | `postgres` |
+## Upgrading from 24.x
 
-### Optional (.env)
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `COMPOSE_PROJECT_NAME` | Docker Compose project name | `sentry` |
-| `SENTRY_VERSION` | Sentry image version | `24.12.0` |
-| `POSTGRES_TAG` | PostgreSQL image tag | `17-alpine` |
-| `REDIS_TAG` | Redis image tag | `7-alpine` |
-| `MEMCACHED_TAG` | Memcached image tag | `1.6` |
-| `DB_NAME` | PostgreSQL database name | `sentry` |
-| `DB_USER` | PostgreSQL username | `sentry` |
-
-## Volumes
-
-| Volume | Purpose |
-|--------|---------|
-| `postgres_data` | PostgreSQL database files |
-| `redis_data` | Redis persistence |
-| `sentry_files` | Uploaded files and attachments |
-| `sentry_config` | Sentry configuration |
-
-## Post-Deployment
-
-### Initialize Database
-
-Run the database migrations and create the first superuser:
-
-```bash
-# Run migrations
-docker exec -it sentry sentry upgrade
-
-# Create admin user (interactive)
-docker exec -it sentry sentry createuser --superuser
-```
-
-### Generate Secret Key
-
-If you haven't generated a secret key:
-
-```bash
-openssl rand -hex 32
-```
-
-Add the output to your `sentry.env` as `SENTRY_SECRET_KEY`.
-
-### Configure Email (Optional)
-
-Add to `sentry.env`:
-
-```bash
-SENTRY_EMAIL_HOST=smtp.example.com
-SENTRY_EMAIL_PORT=587
-SENTRY_EMAIL_USER=sentry@example.com
-SENTRY_EMAIL_PASSWORD=Swordfish
-SENTRY_EMAIL_USE_TLS=true
-SENTRY_SERVER_EMAIL=sentry@example.com
-```
-
-## Common Operations
-
-### Using bc CLI
-
-```bash
-bc sentry logs -f       # View logs
-bc sentry logs -f server  # View specific service logs
-bc sentry restart       # Restart
-bc sentry down          # Stop
-bc sentry update        # Pull and recreate
-```
-
-### Using docker compose directly
-
-```bash
-# Define alias for convenience
-alias dc="docker compose -f oci://ghcr.io/beevelop/sentry:latest --env-file .env.sentry"
-
-# View logs
-dc logs -f
-
-# View specific service logs
-dc logs -f server
-dc logs -f celery-worker
-
-# Restart
-dc restart
-
-# Stop
-dc down
-
-# Update
-dc pull && dc up -d
-```
-
-### Cleanup Old Data
-
-```bash
-docker exec -it sentry sentry cleanup --days 30
-```
-
-### Backup
-
-```bash
-# Backup PostgreSQL database
-docker exec sentry-postgres pg_dump -U sentry sentry > sentry-backup.sql
-```
-
-### Upgrade
-
-```bash
-# 1. Create a backup first
-docker exec sentry-postgres pg_dump -U sentry sentry > sentry-backup.sql
-
-# 2. Update version in .env.sentry
-# 3. Pull new images and restart
-docker compose -f oci://ghcr.io/beevelop/sentry:latest --env-file .env.sentry pull
-docker compose -f oci://ghcr.io/beevelop/sentry:latest --env-file .env.sentry up -d
-
-# 4. Run migrations if needed
-docker exec -it sentry sentry upgrade
-```
-
-## Troubleshooting
-
-### Migration Errors
-
-If migrations fail, check PostgreSQL connectivity:
-
-```bash
-docker exec -it sentry-postgres psql -U sentry -c "SELECT 1"
-```
-
-### Worker Not Processing Events
-
-Check Celery worker status and logs:
-
-```bash
-docker logs sentry-celery-worker
-```
-
-### High Memory Usage
-
-Sentry is memory-intensive. Ensure at least 4GB RAM is available. Consider reducing worker concurrency if needed.
-
-### Container not healthy
-
-Check logs with `dc logs server` and ensure all required environment variables are set. The server has a 120-second startup period.
-
-## Links
-
-- [Official Documentation](https://docs.sentry.io/server/)
-- [Docker Hub](https://hub.docker.com/r/getsentry/sentry)
-- [GitHub](https://github.com/getsentry/sentry)
+The internal architecture changed significantly in 25.x+:
+ `SENTRY_SECRET_KEY`
+ many specialized Kafka consumers
+- PostgreSQL trust auth replaces password auth (pgbouncer handles connections)
+- Redis, ClickHouse, Kafka, Snuba, Relay, Symbolicator are now required
