@@ -753,15 +753,16 @@ services:
     container_name: sentry-symbolicator
     volumes:
       - sentry-symbolicator:/data
+    configs:
+      - source: symbolicator-config
+        target: /etc/symbolicator/config.yml
     networks:
       - sentry
-    command: >-
-      printf 'cache_dir: /data\nbind: 0.0.0.0:3021\nlogging:\n  level: warn\n' > /data/config.yml && exec /bin/symbolicator run -c /data/config.yml
-    entrypoint: ["/bin/sh", "-c"]
+    command: run -c /etc/symbolicator/config.yml
     restart: unless-stopped
     healthcheck:
       <<: *healthcheck_defaults
-      test: [ "CMD", "/bin/symbolicator", "healthcheck", "-c", "/data/config.yml" ]
+      test: [ "CMD", "/bin/symbolicator", "healthcheck", "-c", "/etc/symbolicator/config.yml" ]
     logging:
       driver: "json-file"
       options:
@@ -773,11 +774,12 @@ services:
     container_name: sentry-symbolicator-cleanup
     volumes:
       - sentry-symbolicator:/data
+    configs:
+      - source: symbolicator-config
+        target: /etc/symbolicator/config.yml
     networks:
       - sentry
-    command: >-
-      printf 'cache_dir: /data\nbind: 0.0.0.0:3021\nlogging:\n  level: warn\n' > /data/config.yml && exec /bin/symbolicator cleanup -c /data/config.yml --repeat 1h
-    entrypoint: ["/bin/sh", "-c"]
+    command: cleanup -c /etc/symbolicator/config.yml --repeat 1h
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -962,3 +964,11 @@ volumes:
   sentry-taskbroker:
   sentry-seaweedfs:
   sentry-vroom:
+
+configs:
+  symbolicator-config:
+    content: |
+      cache_dir: /data
+      bind: "0.0.0.0:3021"
+      logging:
+        level: warn
