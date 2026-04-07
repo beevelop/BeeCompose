@@ -51,6 +51,8 @@ x-sentry-defaults: &sentry_defaults
     SENTRY_DB_USER: "${POSTGRES_USER:-postgres}"
     SENTRY_DB_NAME: "${POSTGRES_DB:-postgres}"
     SENTRY_DB_PASSWORD: ""
+    SENTRY_REDIS_HOST: redis
+    SENTRY_MEMCACHED_HOST: memcached
     COMPOSE_PROFILES:
     SENTRY_EVENT_RETENTION_DAYS:
     SENTRY_MAIL_HOST:
@@ -754,7 +756,8 @@ services:
     networks:
       - sentry
     command: >-
-      sh -c "printf 'cache_dir: /data\nbind: 0.0.0.0:3021\nlogging:\n  level: warn\n' > /data/config.yml && exec /bin/symbolicator run -c /data/config.yml"
+      printf 'cache_dir: /data\nbind: 0.0.0.0:3021\nlogging:\n  level: warn\n' > /data/config.yml && exec /bin/symbolicator run -c /data/config.yml
+    entrypoint: ["/bin/sh", "-c"]
     restart: unless-stopped
     healthcheck:
       <<: *healthcheck_defaults
@@ -773,7 +776,8 @@ services:
     networks:
       - sentry
     command: >-
-      sh -c "printf 'cache_dir: /data\nbind: 0.0.0.0:3021\nlogging:\n  level: warn\n' > /data/config.yml && exec /bin/symbolicator cleanup -c /data/config.yml --repeat 1h"
+      printf 'cache_dir: /data\nbind: 0.0.0.0:3021\nlogging:\n  level: warn\n' > /data/config.yml && exec /bin/symbolicator cleanup -c /data/config.yml --repeat 1h
+    entrypoint: ["/bin/sh", "-c"]
     restart: unless-stopped
     logging:
       driver: "json-file"
