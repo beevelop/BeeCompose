@@ -53,6 +53,7 @@ x-sentry-defaults: &sentry_defaults
     SENTRY_DB_PASSWORD: ""
     SENTRY_REDIS_HOST: redis
     SENTRY_MEMCACHED_HOST: memcached
+    SENTRY_KAFKA_HOST: kafka
     COMPOSE_PROFILES:
     SENTRY_EVENT_RETENTION_DAYS:
     SENTRY_MAIL_HOST:
@@ -403,6 +404,9 @@ services:
         <<: *depends_on-healthy
     volumes:
       - sentry-relay-config:/work/.relay
+    configs:
+      - source: relay-config
+        target: /work/.relay/config.yml
     networks:
       - sentry
       - traefik
@@ -966,6 +970,16 @@ volumes:
   sentry-vroom:
 
 configs:
+  relay-config:
+    content: |
+      relay:
+        upstream: 'http://web:9000/'
+        host: 0.0.0.0
+        port: 3000
+      logging:
+        level: error
+      limits:
+        max_thread_count: 8
   symbolicator-config:
     content: |
       cache_dir: /data
