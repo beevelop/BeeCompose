@@ -1,35 +1,243 @@
+
+x-depends_on-default: &depends_on-default
+  condition: service_started
+
+x-depends_on-healthy: &depends_on-healthy
+  condition: service_healthy
+
+x-file-healthcheck: &file_healthcheck_defaults
+  test: [ "CMD-SHELL", "rm /tmp/health.txt" ]
+  interval: "${HEALTHCHECK_FILE_INTERVAL:-60s}"
+  timeout: "${HEALTHCHECK_FILE_TIMEOUT:-10s}"
+  retries: ${HEALTHCHECK_FILE_RETRIES:-3}
+  start_period: "${HEALTHCHECK_FILE_START_PERIOD:-600s}"
+
+x-healthcheck-defaults: &healthcheck_defaults
+  interval: "${HEALTHCHECK_INTERVAL:-30s}"
+  timeout: "${HEALTHCHECK_TIMEOUT:-1m30s}"
+  retries: ${HEALTHCHECK_RETRIES:-10}
+  start_period: "${HEALTHCHECK_START_PERIOD:-10s}"
+
+x-restart-policy: &restart_policy
+  restart: unless-stopped
+
+x-sentry-defaults: &sentry_defaults
+  image: "${SENTRY_IMAGE:-ghcr.io/getsentry/sentry:26.3.1}"
+  depends_on:
+    redis:
+      <<: *depends_on-healthy
+    kafka:
+      <<: *depends_on-healthy
+    pgbouncer:
+      <<: *depends_on-healthy
+    memcached:
+      <<: *depends_on-default
+    smtp:
+      <<: *depends_on-default
+    snuba-api:
+      <<: *depends_on-default
+    symbolicator:
+      <<: *depends_on-default
+  volumes:
+    - sentry-data:/data
+    - type: bind
+      read_only: true
+      source: ./sentry
+      target: /etc/sentry
+  environment:
+    PYTHONUSERBASE: "/data/custom-packages"
+    SENTRY_CONF: "/etc/sentry"
+    SNUBA: "http://snuba-api:1218"
+    VROOM: "http://vroom:8085"
+    COMPOSE_PROFILES:
+    SENTRY_EVENT_RETENTION_DAYS:
+    SENTRY_MAIL_HOST:
+    SENTRY_MAX_EXTERNAL_SOURCEMAP_SIZE:
+    SENTRY_SYSTEM_SECRET_KEY:
+    SENTRY_STATSD_ADDR: "${STATSD_ADDR:-}"
+  env_file:
+    - sentry.env
+  networks:
+    - sentry
+  restart: unless-stopped
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "500k"
+      max-file: "50"
+
+x-snuba-defaults: &snuba_defaults
+  image: "${SNUBA_IMAGE:-ghcr.io/getsentry/snuba:26.3.1}"
+  depends_on:
+    clickhouse:
+      <<: *depends_on-healthy
+    kafka:
+      <<: *depends_on-healthy
+    redis:
+      <<: *depends_on-healthy
+  environment:
+    SNUBA_SETTINGS: self_hosted
+    CLICKHOUSE_HOST: clickhouse
+    DEFAULT_BROKERS: "kafka:9092"
+    REDIS_HOST: redis
+    UWSGI_MAX_REQUESTS: "10000"
+    UWSGI_DISABLE_LOGGING: "true"
+    SENTRY_EVENT_RETENTION_DAYS:
+    SNUBA_STATSD_ADDR: "${STATSD_ADDR:-}"
+  networks:
+    - sentry
+  restart: unless-stopped
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "500k"
+      max-file: "50"
 name: sentry
+
 services:
-  celery-cron:
-    image: getsentry/sentry:${SENTRY_VERSION:-25.7.0}
-    container_name: sentry-celery-cron
-    depends_on:
-      - server
-    env_file: sentry.env
+
+  attachments-consumer:
+    container_name: sentry-attachments-consumer
+    command: run consumer ingest-attachments --consumer-group ingest-consumer --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+
+  billing-metrics-consumer:
+    container_name: sentry-billing-metrics-consumer
+    command: run consumer billing-metrics-consumer --consumer-group billing-metrics-consumer --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  clickhouse:
+    image: "altinity/clickhouse-server:${CLICKHOUSE_TAG:-25.3.6.10034.altinitystable}"
+    container_name: sentry-clickhouse
+    volumes:
+      - sentry-clickhouse:/var/lib/clickhouse
+      - sentry-clickhouse-log:/var/log/clickhouse-server
+      - type: bind
+        read_only: true
+        source: ./clickhouse/config.xml
+        target: /etc/clickhouse-server/config.d/sentry.xml
+      - type: bind
+        read_only: true
+        source: ./clickhouse/default-password.xml
+        target: /etc/clickhouse-server/users.d/default-password.xml
+    environment:
+      MAX_MEMORY_USAGE_RATIO: 0.3
     networks:
       - sentry
-    command: "run cron"
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "HTTP_PROXY='' http_proxy='' wget -nv -t1 --spider 'http://localhost:8123/' || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 30
     logging:
       driver: "json-file"
       options:
         max-size: "500k"
         max-file: "50"
 
-  celery-worker:
-    image: getsentry/sentry:${SENTRY_VERSION:-25.7.0}
-    container_name: sentry-celery-worker
-    depends_on:
-      - server
+  events-consumer:
+    container_name: sentry-events-consumer
+    command: run consumer ingest-events --consumer-group ingest-consumer --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+
+  generic-metrics-consumer:
+    container_name: sentry-generic-metrics-consumer
+    command: run consumer ingest-generic-metrics --consumer-group generic-metrics-consumer --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  ingest-feedback-events:
+    container_name: sentry-ingest-feedback-events
+    command: run consumer ingest-feedback-events --consumer-group ingest-feedback --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  ingest-monitors:
+    container_name: sentry-ingest-monitors
+    command: run consumer ingest-monitors --consumer-group ingest-monitors --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  ingest-occurrences:
+    container_name: sentry-ingest-occurrences
+    command: run consumer ingest-occurrences --consumer-group ingest-occurrences --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  ingest-profiles:
+    container_name: sentry-ingest-profiles
+    command: run consumer ingest-profiles --consumer-group ingest-profiles --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  ingest-replay-recordings:
+    container_name: sentry-ingest-replay-recordings
+    command: run consumer ingest-replay-recordings --consumer-group ingest-replay-recordings --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  kafka:
+    image: "confluentinc/cp-kafka:${KAFKA_TAG:-7.6.6}"
+    container_name: sentry-kafka
+    volumes:
+      - sentry-kafka:/var/lib/kafka/data
+      - sentry-kafka-log:/var/lib/kafka/log
+      - sentry-secrets:/etc/kafka/secrets
     environment:
-      SENTRY_DB_NAME: ${DB_NAME:-sentry}
-      SENTRY_DB_USER: ${DB_USER:-sentry}
-      SENTRY_DB_PASSWORD: ${DB_PASS:-Swordfish}
-    env_file: sentry.env
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1001@127.0.0.1:29093"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_NODE_ID: "1001"
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:29092,INTERNAL://0.0.0.0:9093,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://127.0.0.1:29092,INTERNAL://kafka:9093,EXTERNAL://kafka:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS: "1"
+      KAFKA_LOG_RETENTION_HOURS: "24"
+      KAFKA_MESSAGE_MAX_BYTES: "50000000"
+      KAFKA_MAX_REQUEST_SIZE: "50000000"
+      CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
+      KAFKA_LOG4J_LOGGERS: "kafka.cluster=WARN,kafka.controller=WARN,kafka.coordinator=WARN,kafka.log=WARN,kafka.server=WARN,state.change.logger=WARN"
+      KAFKA_LOG4J_ROOT_LOGLEVEL: "WARN"
+      KAFKA_TOOLS_LOG4J_LOGLEVEL: "WARN"
     networks:
       - sentry
-    command: "run worker"
     restart: unless-stopped
+    healthcheck:
+      <<: *healthcheck_defaults
+      test: [ "CMD-SHELL", "nc -z localhost 9092" ]
+      interval: 10s
+      timeout: 10s
+      retries: 30
     logging:
       driver: "json-file"
       options:
@@ -37,91 +245,181 @@ services:
         max-file: "50"
 
   memcached:
-    image: memcached:${MEMCACHED_TAG:-1.6}
+    image: "memcached:${MEMCACHED_TAG:-1.6.26-alpine}"
     container_name: sentry-memcached
     networks:
       - sentry
+    command: [ "-I", "${SENTRY_MAX_EXTERNAL_SOURCEMAP_SIZE:-1M}" ]
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "echo stats | nc localhost 11211 | grep -q uptime" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      <<: *healthcheck_defaults
+      test: echo stats | nc 127.0.0.1 11211
     logging:
       driver: "json-file"
       options:
         max-size: "500k"
         max-file: "50"
+
+  metrics-consumer:
+    container_name: sentry-metrics-consumer
+    command: run consumer ingest-metrics --consumer-group metrics-consumer --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  monitors-clock-tasks:
+    container_name: sentry-monitors-clock-tasks
+    command: run consumer monitors-clock-tasks --consumer-group monitors-clock-tasks --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  monitors-clock-tick:
+    container_name: sentry-monitors-clock-tick
+    command: run consumer monitors-clock-tick --consumer-group monitors-clock-tick --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  pgbouncer:
+    image: "edoburu/pgbouncer:${PGBOUNCER_TAG:-v1.24.1-p1}"
+    container_name: sentry-pgbouncer
+    depends_on:
+      postgres:
+        <<: *depends_on-healthy
+    environment:
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_HOST: postgres
+      DB_NAME: postgres
+      AUTH_TYPE: trust
+      POOL_MODE: transaction
+      ADMIN_USERS: postgres,sentry
+      MAX_CLIENT_CONN: 10000
+    networks:
+      - sentry
+    restart: unless-stopped
+    healthcheck:
+      <<: *healthcheck_defaults
+      test: [ "CMD-SHELL", "psql -U postgres -p 5432 -h 127.0.0.1 -tA -c \"select 1;\" -d postgres >/dev/null" ]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file: "50"
+
+  post-process-forwarder-errors:
+    container_name: sentry-post-process-forwarder-errors
+    command: run consumer --no-strict-offset-reset post-process-forwarder-errors --consumer-group post-process-forwarder --synchronize-commit-log-topic=snuba-commit-log --synchronize-commit-group=snuba-consumers --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+
+  post-process-forwarder-issue-platform:
+    container_name: sentry-post-process-forwarder-issue-platform
+    command: run consumer --no-strict-offset-reset post-process-forwarder-issue-platform --consumer-group post-process-forwarder --synchronize-commit-log-topic=snuba-generic-events-commit-log --synchronize-commit-group generic_events_group --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  post-process-forwarder-transactions:
+    container_name: sentry-post-process-forwarder-transactions
+    command: run consumer --no-strict-offset-reset post-process-forwarder-transactions --consumer-group post-process-forwarder --synchronize-commit-log-topic=snuba-transactions-commit-log --synchronize-commit-group transactions_group --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
 
   postgres:
-    image: postgres:${POSTGRES_TAG:-17-alpine}
+    image: "postgres:${POSTGRES_TAG:-14.19-bookworm}"
     container_name: sentry-postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - sentry-postgres:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: ${DB_USER:-sentry}
-      POSTGRES_PASSWORD: ${DB_PASS:-Swordfish}
+      POSTGRES_HOST_AUTH_METHOD: "trust"
     networks:
       - sentry
+    command: [ "postgres" ]
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-sentry}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      <<: *healthcheck_defaults
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}" ]
     logging:
       driver: "json-file"
       options:
         max-size: "500k"
         max-file: "50"
+
+  process-segments:
+    container_name: sentry-process-segments
+    command: run consumer --no-strict-offset-reset process-segments --consumer-group process-segments --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  process-spans:
+    container_name: sentry-process-spans
+    command: run consumer --no-strict-offset-reset process-spans --consumer-group process-spans --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
 
   redis:
-    image: redis:${REDIS_TAG:-7-alpine}
+    image: "redis:${REDIS_TAG:-6.2.20-alpine}"
     container_name: sentry-redis
     volumes:
-      - redis_data:/data
+      - sentry-redis:/data
+      - type: bind
+        read_only: true
+        source: ./redis.conf
+        target: /usr/local/etc/redis/redis.conf
     networks:
       - sentry
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
+      <<: *healthcheck_defaults
+      test: redis-cli ping | grep PONG
     logging:
       driver: "json-file"
       options:
         max-size: "500k"
         max-file: "50"
 
-  server:
-    image: getsentry/sentry:${SENTRY_VERSION:-25.7.0}
-    container_name: sentry
+  relay:
+    image: "${RELAY_IMAGE:-ghcr.io/getsentry/relay:26.3.1}"
+    container_name: sentry-relay
     depends_on:
-      - memcached
-      - postgres
-      - redis
+      kafka:
+        <<: *depends_on-healthy
+      redis:
+        <<: *depends_on-healthy
+      web:
+        <<: *depends_on-healthy
     volumes:
-      - sentry_files:/var/lib/sentry/files
-      - sentry_config:/etc/sentry
-    environment:
-      SENTRY_DB_NAME: ${DB_NAME:-sentry}
-      SENTRY_DB_USER: ${DB_USER:-sentry}
-      SENTRY_DB_PASSWORD: ${DB_PASS:-Swordfish}
-    env_file: sentry.env
+      - type: bind
+        read_only: true
+        source: ./relay
+        target: /work/.relay
     networks:
       - sentry
       - traefik
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/_health/" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 120s
+      <<: *healthcheck_defaults
+      test: [ "CMD", "/bin/relay", "healthcheck" ]
     logging:
       driver: "json-file"
       options:
@@ -129,10 +427,531 @@ services:
         max-file: "50"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.sentry.rule=Host(`${SERVICE_DOMAIN:-example.com}`)"
+      - "traefik.http.routers.sentry.rule=Host(`${SERVICE_DOMAIN:-sentry.example.com}`)"
       - "traefik.http.routers.sentry.entrypoints=websecure"
-      - "traefik.http.services.sentry.loadbalancer.server.port=9000"
+      - "traefik.http.services.sentry.loadbalancer.server.port=3000"
       - "traefik.docker.network=traefik_default"
+
+  ##################################
+  ## Feature Complete Other Services
+  ##################################
+
+  seaweedfs:
+    image: "chrislusf/seaweedfs:${SEAWEEDFS_TAG:-4.09_large_disk}"
+    container_name: sentry-seaweedfs
+    volumes:
+      - sentry-seaweedfs:/data
+    environment:
+      AWS_ACCESS_KEY_ID: sentry
+      AWS_SECRET_ACCESS_KEY: sentry
+    networks:
+      - sentry
+    command: >-
+      server -dir=/data -filer=true -filer.port=8888 -filer.port.grpc=18888 -filer.defaultReplicaPlacement=000 -master=true -master.port=9333 -master.port.grpc=19333 -metricsPort=9091 -s3=true -s3.port=8333 -s3.port.grpc=18333 -volume=true -volume.dir.idx=/data/idx -volume.index=leveldbLarge -volume.max=0 -volume.preStopSeconds=8 -volume.readMode=redirect -volume.port=8080 -volume.port.grpc=18080 -ip=127.0.0.1 -ip.bind=0.0.0.0 -webdav=false
+    entrypoint: "weed"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "http_proxy='' wget -q -O- http://seaweedfs:8080/healthz http://seaweedfs:9333/cluster/healthz http://seaweedfs:8333/healthz || exit 1" ]
+      interval: 30s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file: "50"
+    profiles:
+      - feature-complete
+
+  sentry-cleanup:
+    container_name: sentry-cleanup
+    depends_on:
+      web:
+        <<: *depends_on-healthy
+    command: [ "sh", "-c", "while true; do sentry cleanup --days ${SENTRY_EVENT_RETENTION_DAYS:-90}; sleep 86400; done" ]
+    <<: *sentry_defaults
+  smtp:
+    image: "registry.gitlab.com/egos-tech/smtp:${SMTP_TAG:-latest}"
+    container_name: sentry-smtp
+    volumes:
+      - sentry-smtp:/var/spool/exim4
+      - sentry-smtp-log:/var/log/exim4
+    environment:
+      MAILNAME: ${SENTRY_MAIL_HOST:-}
+      SES_USER:
+      SES_PASSWORD:
+      SES_REGION:
+    networks:
+      - sentry
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file: "50"
+
+  snuba-api:
+    container_name: sentry-snuba-api
+    healthcheck:
+      <<: *healthcheck_defaults
+      test:
+        - "CMD"
+        - "/bin/bash"
+        - "-c"
+        - 'exec 3<>/dev/tcp/127.0.0.1/1218 && echo -e "GET /health HTTP/1.1\r\nhost: 127.0.0.1\r\n\r\n" >&3 && grep ok -s -m 1 <&3'
+    <<: *snuba_defaults
+
+  snuba-eap-items-consumer:
+    container_name: sentry-snuba-eap-items-consumer
+    command: rust-consumer --storage eap_items --consumer-group eap_items_group --auto-offset-reset=latest --max-batch-time-ms 1000 --no-strict-offset-reset --use-rust-processor --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-errors-consumer:
+    container_name: sentry-snuba-errors-consumer
+    command: rust-consumer --storage errors --consumer-group snuba-consumers --auto-offset-reset=latest --max-batch-time-ms 750 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+
+  snuba-generic-metrics-counters-consumer:
+    container_name: sentry-snuba-gm-counters-consumer
+    command: rust-consumer --storage generic_metrics_counters_raw --consumer-group snuba-gen-metrics-counters-consumers --auto-offset-reset=latest --max-batch-time-ms 750 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-generic-metrics-distributions-consumer:
+    container_name: sentry-snuba-gm-distributions-consumer
+    command: rust-consumer --storage generic_metrics_distributions_raw --consumer-group snuba-gen-metrics-distributions-consumers --auto-offset-reset=latest --max-batch-time-ms 750 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-generic-metrics-gauges-consumer:
+    container_name: sentry-snuba-gm-gauges-consumer
+    command: rust-consumer --storage generic_metrics_gauges_raw --consumer-group snuba-gen-metrics-gauges-consumers --auto-offset-reset=latest --max-batch-time-ms 750 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-generic-metrics-sets-consumer:
+    container_name: sentry-snuba-gm-sets-consumer
+    command: rust-consumer --storage generic_metrics_sets_raw --consumer-group snuba-gen-metrics-sets-consumers --auto-offset-reset=latest --max-batch-time-ms 750 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-group-attributes-consumer:
+    container_name: sentry-snuba-group-attributes-consumer
+    command: rust-consumer --storage group_attributes --consumer-group snuba-group-attributes-consumers --auto-offset-reset=latest --max-batch-time-ms 750 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+
+  snuba-issue-occurrence-consumer:
+    container_name: sentry-snuba-issue-occurrence-consumer
+    command: rust-consumer --storage search_issues --consumer-group generic_events_group --auto-offset-reset=latest --max-batch-time-ms 750 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-metrics-consumer:
+    container_name: sentry-snuba-metrics-consumer
+    command: rust-consumer --storage metrics_raw --consumer-group snuba-metrics-consumers --auto-offset-reset=latest --max-batch-time-ms 750 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-outcomes-billing-consumer:
+    container_name: sentry-snuba-outcomes-billing-consumer
+    command: rust-consumer --storage outcomes_raw --consumer-group snuba-consumers --auto-offset-reset=earliest --max-batch-time-ms 750 --no-strict-offset-reset --raw-events-topic outcomes-billing --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+
+  snuba-outcomes-consumer:
+    container_name: sentry-snuba-outcomes-consumer
+    command: rust-consumer --storage outcomes_raw --consumer-group snuba-consumers --auto-offset-reset=earliest --max-batch-time-ms 750 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+
+  snuba-profiling-functions-consumer:
+    container_name: sentry-snuba-profiling-functions-consumer
+    command: rust-consumer --storage functions_raw --consumer-group snuba-consumers --auto-offset-reset=latest --max-batch-time-ms 1000 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-profiling-profile-chunks-consumer:
+    container_name: sentry-snuba-profiling-profile-chunks-consumer
+    command: rust-consumer --storage profile_chunks --consumer-group snuba-consumers --auto-offset-reset=latest --max-batch-time-ms 1000 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-profiling-profiles-consumer:
+    container_name: sentry-snuba-profiling-profiles-consumer
+    command: rust-consumer --storage profiles --consumer-group snuba-consumers --auto-offset-reset=latest --max-batch-time-ms 1000 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-replacer:
+    container_name: sentry-snuba-replacer
+    command: replacer --storage errors --auto-offset-reset=latest --no-strict-offset-reset
+    <<: *snuba_defaults
+
+  snuba-replays-consumer:
+    container_name: sentry-snuba-replays-consumer
+    command: rust-consumer --storage replays --consumer-group snuba-consumers --auto-offset-reset=latest --max-batch-time-ms 750 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-subscription-consumer-eap-items:
+    container_name: sentry-snuba-subscription-consumer-eap-items
+    command: subscriptions-scheduler-executor --dataset events_analytics_platform --entity eap_items --auto-offset-reset=latest --no-strict-offset-reset --consumer-group=snuba-eap-items-subscriptions-consumers --followed-consumer-group=eap_items_group --schedule-ttl=60 --stale-threshold-seconds=900 --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+
+  snuba-subscription-consumer-events:
+    container_name: sentry-snuba-subscription-consumer-events
+    command: subscriptions-scheduler-executor --dataset events --entity events --auto-offset-reset=latest --no-strict-offset-reset --consumer-group=snuba-events-subscriptions-consumers --followed-consumer-group=snuba-consumers --schedule-ttl=60 --stale-threshold-seconds=900 --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+
+  snuba-subscription-consumer-generic-metrics-counters:
+    container_name: sentry-snuba-subscription-consumer-gm-counters
+    command: subscriptions-scheduler-executor --dataset generic_metrics --entity=generic_metrics_counters --auto-offset-reset=latest --no-strict-offset-reset --consumer-group=snuba-generic-metrics-counters-subscriptions-schedulers --followed-consumer-group=snuba-gen-metrics-counters-consumers --schedule-ttl=60 --stale-threshold-seconds=900 --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-subscription-consumer-generic-metrics-distributions:
+    container_name: sentry-snuba-subscription-consumer-gm-distributions
+    command: subscriptions-scheduler-executor --dataset generic_metrics --entity=generic_metrics_distributions --auto-offset-reset=latest --no-strict-offset-reset --consumer-group=snuba-generic-metrics-distributions-subscriptions-schedulers --followed-consumer-group=snuba-gen-metrics-distributions-consumers --schedule-ttl=60 --stale-threshold-seconds=900 --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-subscription-consumer-generic-metrics-gauges:
+    container_name: sentry-snuba-subscription-consumer-gm-gauges
+    command: subscriptions-scheduler-executor --dataset generic_metrics --entity=generic_metrics_gauges --auto-offset-reset=latest --no-strict-offset-reset --consumer-group=snuba-generic-metrics-gauges-subscriptions-schedulers --followed-consumer-group=snuba-gen-metrics-gauges-consumers --schedule-ttl=60 --stale-threshold-seconds=900 --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-subscription-consumer-generic-metrics-sets:
+    container_name: sentry-snuba-subscription-consumer-gm-sets
+    command: subscriptions-scheduler-executor --dataset generic_metrics --entity=generic_metrics_sets --auto-offset-reset=latest --no-strict-offset-reset --consumer-group=snuba-generic-metrics-sets-subscriptions-schedulers --followed-consumer-group=snuba-gen-metrics-sets-consumers --schedule-ttl=60 --stale-threshold-seconds=900 --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-subscription-consumer-metrics:
+    container_name: sentry-snuba-subscription-consumer-metrics
+    command: subscriptions-scheduler-executor --dataset metrics --entity metrics_sets --entity metrics_counters --auto-offset-reset=latest --no-strict-offset-reset --consumer-group=snuba-metrics-subscriptions-consumers --followed-consumer-group=snuba-metrics-consumers --schedule-ttl=60 --stale-threshold-seconds=900 --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  snuba-subscription-consumer-transactions:
+    container_name: sentry-snuba-subscription-consumer-transactions
+    command: subscriptions-scheduler-executor --dataset transactions --entity transactions --auto-offset-reset=latest --no-strict-offset-reset --consumer-group=snuba-transactions-subscriptions-consumers --followed-consumer-group=transactions_group --schedule-ttl=60 --stale-threshold-seconds=900 --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  ###################################
+  ## Feature Complete Snuba Consumers
+  ###################################
+
+  snuba-transactions-consumer:
+    container_name: sentry-snuba-transactions-consumer
+    command: rust-consumer --storage transactions --consumer-group transactions_group --auto-offset-reset=latest --max-batch-time-ms 750 --no-strict-offset-reset --health-check-file /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *snuba_defaults
+    profiles:
+      - feature-complete
+
+  subscription-consumer-eap-items:
+    container_name: sentry-subscription-consumer-eap-items
+    command: run consumer subscription-results-eap-items --consumer-group subscription-results-eap-items --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  subscription-consumer-events:
+    container_name: sentry-subscription-consumer-events
+    command: run consumer events-subscription-results --consumer-group query-subscription-consumer --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+
+  subscription-consumer-generic-metrics:
+    container_name: sentry-subscription-consumer-generic-metrics
+    command: run consumer generic-metrics-subscription-results --consumer-group query-subscription-consumer --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  subscription-consumer-metrics:
+    container_name: sentry-subscription-consumer-metrics
+    command: run consumer metrics-subscription-results --consumer-group query-subscription-consumer --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  subscription-consumer-transactions:
+    container_name: sentry-subscription-consumer-transactions
+    command: run consumer transactions-subscription-results --consumer-group query-subscription-consumer --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  symbolicator:
+    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.3.1}"
+    container_name: sentry-symbolicator
+    volumes:
+      - sentry-symbolicator:/data
+      - type: bind
+        read_only: true
+        source: ./symbolicator
+        target: /etc/symbolicator
+    networks:
+      - sentry
+    command: run -c /etc/symbolicator/config.yml
+    restart: unless-stopped
+    healthcheck:
+      <<: *healthcheck_defaults
+      test: [ "CMD", "/bin/symbolicator", "healthcheck", "-c", "/etc/symbolicator/config.yml" ]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file: "50"
+
+  symbolicator-cleanup:
+    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.3.1}"
+    container_name: sentry-symbolicator-cleanup
+    volumes:
+      - sentry-symbolicator:/data
+      - type: bind
+        read_only: true
+        source: ./symbolicator
+        target: /etc/symbolicator
+    networks:
+      - sentry
+    command: cleanup -c /etc/symbolicator/config.yml --repeat 1h
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file: "50"
+
+  taskbroker:
+    image: "${TASKBROKER_IMAGE:-ghcr.io/getsentry/taskbroker:26.3.1}"
+    container_name: sentry-taskbroker
+    depends_on:
+      kafka:
+        <<: *depends_on-healthy
+    volumes:
+      - sentry-taskbroker:/opt/sqlite
+    environment:
+      TASKBROKER_KAFKA_CLUSTER: "kafka:9092"
+      TASKBROKER_KAFKA_DEADLETTER_CLUSTER: "kafka:9092"
+      TASKBROKER_DB_PATH: "/opt/sqlite/taskbroker-activations.sqlite"
+      TASKBROKER_STATSD_ADDR: ${STATSD_ADDR:-127.0.0.1:8125}
+    networks:
+      - sentry
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file: "50"
+
+  taskscheduler:
+    container_name: sentry-taskscheduler
+    command: run taskworker-scheduler
+    <<: *sentry_defaults
+
+  taskworker:
+    container_name: sentry-taskworker
+    command: run taskworker --concurrency=${SENTRY_TASKWORKER_CONCURRENCY:-4} --rpc-host=taskbroker:50051 --health-check-file-path=/tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+
+  ######################################
+  ## Feature Complete Sentry Consumers
+  ######################################
+
+  transactions-consumer:
+    container_name: sentry-transactions-consumer
+    command: run consumer ingest-transactions --consumer-group ingest-consumer --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  uptime-checker:
+    image: "${UPTIME_CHECKER_IMAGE:-ghcr.io/getsentry/uptime-checker:26.3.1}"
+    container_name: sentry-uptime-checker
+    depends_on:
+      kafka:
+        <<: *depends_on-healthy
+      redis:
+        <<: *depends_on-healthy
+    environment:
+      UPTIME_CHECKER_RESULTS_KAFKA_CLUSTER: kafka:9092
+      UPTIME_CHECKER_REDIS_HOST: redis://redis:6379
+      UPTIME_CHECKER_ALLOW_INTERNAL_IPS: "false"
+      UPTIME_CHECKER_FAILURE_RETRIES: "1"
+      UPTIME_CHECKER_STATSD_ADDR: ${STATSD_ADDR:-127.0.0.1:8125}
+    networks:
+      - sentry
+    command: run
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file: "50"
+    profiles:
+      - feature-complete
+
+  uptime-results:
+    container_name: sentry-uptime-results
+    command: run consumer uptime-results --consumer-group uptime-results --healthcheck-file-path /tmp/health.txt
+    healthcheck:
+      <<: *file_healthcheck_defaults
+    <<: *sentry_defaults
+    profiles:
+      - feature-complete
+
+  vroom:
+    image: "${VROOM_IMAGE:-ghcr.io/getsentry/vroom:26.3.1}"
+    container_name: sentry-vroom
+    depends_on:
+      kafka:
+        <<: *depends_on-healthy
+      seaweedfs:
+        <<: *depends_on-healthy
+    volumes:
+      - sentry-vroom:/var/vroom/sentry-profiles
+    environment:
+      SENTRY_KAFKA_BROKERS_PROFILING: "kafka:9092"
+      SENTRY_KAFKA_BROKERS_OCCURRENCES: "kafka:9092"
+      SENTRY_BUCKET_PROFILES: "s3://profiles?region=us-east-1&endpoint=seaweedfs:8333&s3ForcePathStyle=true&disableSSL=true"
+      AWS_ACCESS_KEY: "sentry"
+      AWS_SECRET_KEY: "sentry"
+      SENTRY_SNUBA_HOST: "http://snuba-api:1218"
+    networks:
+      - sentry
+    restart: unless-stopped
+    healthcheck:
+      <<: *healthcheck_defaults
+      test:
+        - "CMD"
+        - "/bin/bash"
+        - "-c"
+        - 'exec 3<>/dev/tcp/127.0.0.1/8085 && echo -e "GET /health HTTP/1.1\r\nhost: 127.0.0.1\r\n\r\n" >&3 && grep OK -s -m 1 <&3'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file: "50"
+    profiles:
+      - feature-complete
+
+  vroom-cleanup:
+    image: "${VROOM_IMAGE:-ghcr.io/getsentry/vroom:26.3.1}"
+    container_name: sentry-vroom-cleanup
+    depends_on:
+      vroom:
+        <<: *depends_on-healthy
+    volumes:
+      - sentry-vroom:/var/vroom/sentry-profiles
+    environment:
+      SENTRY_EVENT_RETENTION_DAYS:
+    networks:
+      - sentry
+    command: [ "sh", "-c", "while true; do find /var/vroom/sentry-profiles -type f -mtime +${SENTRY_EVENT_RETENTION_DAYS:-90} -delete; sleep 86400; done" ]
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file: "50"
+    profiles:
+      - feature-complete
+
+  web:
+    container_name: sentry-web
+    healthcheck:
+      <<: *healthcheck_defaults
+      test:
+        - "CMD"
+        - "/bin/bash"
+        - "-c"
+        - 'exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e "GET /_health/ HTTP/1.1\r\nhost: 127.0.0.1\r\n\r\n" >&3 && grep ok -s -m 1 <&3'
+    <<: *sentry_defaults
+    ulimits:
+      nofile:
+        soft: 4096
+        hard: 4096
 
 networks:
   sentry:
@@ -141,11 +960,17 @@ networks:
     external: true
 
 volumes:
-  postgres_data:
-    name: ${COMPOSE_PROJECT_NAME:-sentry}_postgres_data
-  redis_data:
-    name: ${COMPOSE_PROJECT_NAME:-sentry}_redis_data
-  sentry_files:
-    name: ${COMPOSE_PROJECT_NAME:-sentry}_files
-  sentry_config:
-    name: ${COMPOSE_PROJECT_NAME:-sentry}_config
+  sentry-data:
+  sentry-postgres:
+  sentry-redis:
+  sentry-kafka:
+  sentry-kafka-log:
+  sentry-secrets:
+  sentry-clickhouse:
+  sentry-clickhouse-log:
+  sentry-smtp:
+  sentry-smtp-log:
+  sentry-symbolicator:
+  sentry-taskbroker:
+  sentry-seaweedfs:
+  sentry-vroom:
