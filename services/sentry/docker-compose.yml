@@ -40,20 +40,21 @@ x-sentry-defaults: &sentry_defaults
       <<: *depends_on-default
   volumes:
     - sentry-data:/data
-    - type: bind
-      read_only: true
-      source: ./sentry
-      target: /etc/sentry
+    - sentry-config:/etc/sentry
   environment:
     PYTHONUSERBASE: "/data/custom-packages"
     SENTRY_CONF: "/etc/sentry"
     SNUBA: "http://snuba-api:1218"
     VROOM: "http://vroom:8085"
+    DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:@pgbouncer/${POSTGRES_DB:-postgres}"
+    SENTRY_DB_HOST: pgbouncer
+    SENTRY_DB_USER: "${POSTGRES_USER:-postgres}"
+    SENTRY_DB_NAME: "${POSTGRES_DB:-postgres}"
+    SENTRY_DB_PASSWORD: ""
     COMPOSE_PROFILES:
     SENTRY_EVENT_RETENTION_DAYS:
     SENTRY_MAIL_HOST:
     SENTRY_MAX_EXTERNAL_SOURCEMAP_SIZE:
-    SENTRY_SYSTEM_SECRET_KEY:
     SENTRY_STATSD_ADDR: "${STATSD_ADDR:-}"
   env_file:
     - sentry.env
@@ -118,16 +119,8 @@ services:
     volumes:
       - sentry-clickhouse:/var/lib/clickhouse
       - sentry-clickhouse-log:/var/log/clickhouse-server
-      - type: bind
-        read_only: true
-        source: ./clickhouse/config.xml
-        target: /etc/clickhouse-server/config.d/sentry.xml
-      - type: bind
-        read_only: true
-        source: ./clickhouse/default-password.xml
-        target: /etc/clickhouse-server/users.d/default-password.xml
     environment:
-      MAX_MEMORY_USAGE_RATIO: 0.3
+      CLICKHOUSE_PASSWORD: ""
     networks:
       - sentry
     restart: unless-stopped
@@ -294,9 +287,9 @@ services:
       postgres:
         <<: *depends_on-healthy
     environment:
-      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_USER: "${POSTGRES_USER:-postgres}"
       DB_HOST: postgres
-      DB_NAME: postgres
+      DB_NAME: "${POSTGRES_DB:-postgres}"
       AUTH_TYPE: trust
       POOL_MODE: transaction
       ADMIN_USERS: postgres,sentry
@@ -345,6 +338,8 @@ services:
       - sentry-postgres:/var/lib/postgresql/data
     environment:
       POSTGRES_HOST_AUTH_METHOD: "trust"
+      POSTGRES_USER: "${POSTGRES_USER:-postgres}"
+      POSTGRES_DB: "${POSTGRES_DB:-postgres}"
     networks:
       - sentry
     command: [ "postgres" ]
@@ -381,13 +376,9 @@ services:
     container_name: sentry-redis
     volumes:
       - sentry-redis:/data
-      - type: bind
-        read_only: true
-        source: ./redis.conf
-        target: /usr/local/etc/redis/redis.conf
     networks:
       - sentry
-    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+    command: [ "redis-server", "--maxmemory", "0", "--maxmemory-policy", "volatile-lru" ]
     restart: unless-stopped
     healthcheck:
       <<: *healthcheck_defaults
@@ -409,10 +400,7 @@ services:
       web:
         <<: *depends_on-healthy
     volumes:
-      - type: bind
-        read_only: true
-        source: ./relay
-        target: /work/.relay
+      - sentry-relay-config:/work/.relay
     networks:
       - sentry
       - traefik
@@ -763,17 +751,14 @@ services:
     container_name: sentry-symbolicator
     volumes:
       - sentry-symbolicator:/data
-      - type: bind
-        read_only: true
-        source: ./symbolicator
-        target: /etc/symbolicator
     networks:
       - sentry
-    command: run -c /etc/symbolicator/config.yml
+    command: >-
+      sh -c "printf 'cache_dir: /data\nbind: 0.0.0.0:3021\nlogging:\n  level: warn\n' > /data/config.yml && exec /bin/symbolicator run -c /data/config.yml"
     restart: unless-stopped
     healthcheck:
       <<: *healthcheck_defaults
-      test: [ "CMD", "/bin/symbolicator", "healthcheck", "-c", "/etc/symbolicator/config.yml" ]
+      test: [ "CMD", "/bin/symbolicator", "healthcheck", "-c", "/data/config.yml" ]
     logging:
       driver: "json-file"
       options:
@@ -785,13 +770,10 @@ services:
     container_name: sentry-symbolicator-cleanup
     volumes:
       - sentry-symbolicator:/data
-      - type: bind
-        read_only: true
-        source: ./symbolicator
-        target: /etc/symbolicator
     networks:
       - sentry
-    command: cleanup -c /etc/symbolicator/config.yml --repeat 1h
+    command: >-
+      sh -c "printf 'cache_dir: /data\nbind: 0.0.0.0:3021\nlogging:\n  level: warn\n' > /data/config.yml && exec /bin/symbolicator cleanup -c /data/config.yml --repeat 1h"
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -960,6 +942,7 @@ networks:
     external: true
 
 volumes:
+  sentry-config:
   sentry-data:
   sentry-postgres:
   sentry-redis:
@@ -971,6 +954,7 @@ volumes:
   sentry-smtp:
   sentry-smtp-log:
   sentry-symbolicator:
+  sentry-relay-config:
   sentry-taskbroker:
   sentry-seaweedfs:
   sentry-vroom:

@@ -28,6 +28,13 @@ SENTRY_SYSTEM_SECRET_KEY = os.environ.get(
     "SENTRY_SYSTEM_SECRET_KEY",
     os.environ.get("SENTRY_SECRET_KEY", ""),
 )
+
+if not SENTRY_SYSTEM_SECRET_KEY or SENTRY_SYSTEM_SECRET_KEY.startswith("!!changeme!!"):
+    raise RuntimeError(
+        "SENTRY_SYSTEM_SECRET_KEY is not set or still uses the placeholder value. "
+        "Generate a key with: docker compose run --rm web config generate-secret-key"
+    )
+
 SECRET_KEY = SENTRY_SYSTEM_SECRET_KEY
 
 SENTRY_OPTIONS["system.secret-key"] = SENTRY_SYSTEM_SECRET_KEY

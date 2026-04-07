@@ -36,7 +36,7 @@ Sentry 26.x is a multi-service stack. All images are pulled from GitHub Containe
 
 ### 1. Clone or download the service directory
 
-All config files (clickhouse/, relay/, symbolicator/, sentry/, redis.conf) must be present in the working directory alongside `docker-compose.yml`.
+All config files are managed via named Docker volumes — no bind-mounted directories are needed in the working directory alongside `docker-compose.yml`.
 
 ### 2. Configure environment
 
@@ -51,11 +51,16 @@ cp .env.example .env.local
 docker compose run --rm relay credentials generate
 ```
 
-Copy the `secret_key` and `public_key` output into `relay/config.yml`:
+Copy the `secret_key` and `public_key` output into `relay/config.yml` in the relay config volume. On first start, Relay auto-generates credentials in the `sentry-relay-config` named volume — run:
 
 ```bash
-cp relay/config.yml.example relay/config.yml
-# Edit relay/config.yml and set secret_key + public_key
+docker compose run --rm relay credentials generate
+```
+
+Then inspect the volume to get the keys:
+
+```bash
+docker compose run --rm relay credentials show
 ```
 
 ### 4. Generate the Sentry secret key
@@ -84,10 +89,10 @@ docker compose run --rm web createuser --email admin@example.com --password Swor
 
 ```bash
 # Errors-only (default, ~26 containers)
-docker compose --env-file .env.local up -d
+docker compose --env-file .env --env-file .env.local up -d
 
 # Feature-complete (~70 containers)
-COMPOSE_PROFILES=feature-complete docker compose --env-file .env.local up -d
+COMPOSE_PROFILES=feature-complete docker compose --env-file .env --env-file .env.local up -d
 ```
 
 ### With bc CLI
@@ -99,9 +104,7 @@ bc sentry up
 ### Direct OCI deployment
 
 ```bash
-# NOTE: Config directories (sentry/, clickhouse/, relay/, symbolicator/) and
-# redis.conf must exist in the working directory before running.
-docker compose -f oci://ghcr.io/beevelop/sentry:latest --env-file .env.local up -d
+docker compose -f oci://ghcr.io/beevelop/sentry:latest --env-file .env --env-file .env.local up -d
 ```
 
 ## Directory Structure
@@ -112,20 +115,14 @@ services/sentry/
  .env                      # Image version pins (committed)
  .env.example              # Configuration template
  sentry.env                # Sentry runtime env vars (set SENTRY_SYSTEM_SECRET_KEY!)
- sentry/                   # Mounted to /etc/sentry in sentry containers
- sentry.conf.py        # Django settings   
- config.yml            # Sentry YAML options (mail, filestore, integrations)   
- entrypoint.sh         # Container entrypoint   
- clickhouse/               # ClickHouse tuning (mounted read-only)
- config.xml   
- default-password.xml   
- symbolicator/             # Symbolicator config (mounted read-only)
- config.yml   
- relay/                    # Relay config (mounted read-only)
- config.yml            #  created from config.yml.exampleGenerated    
- config.yml.example    # Template   
- redis.conf                # Redis memory policy
+ sentry/                   # Reference config — customize via named volume after init
+   sentry.conf.py          # Django settings reference
+   config.yml              # Sentry YAML options reference
+   entrypoint.sh           # Container entrypoint reference
 ```
+
+> **Named volumes:** All runtime config is stored in Docker named volumes (`sentry-config`,
+> `sentry-relay-config`, etc.). No bind-mounted host directories are required.
 
 ## Environment Variables
 
@@ -134,16 +131,16 @@ services/sentry/
 | `SERVICE_DOMAIN` | `sentry.example.com` | Public hostname (Traefik routing) |
 | `COMPOSE_PROFILES` | `errors-only` | `errors-only` or `feature-complete` |
 | `SENTRY_EVENT_RETENTION_DAYS` | `90` | Days to retain event data |
-| `SENTRY_MAIL_ | FQDN for outbound mail (e.g. `sentry.example.com`) |HOST` | 
+| `SENTRY_MAIL_HOST` | — | FQDN for outbound mail (e.g. `sentry.example.com`) |
 | `SENTRY_TASKWORKER_CONCURRENCY` | `4` | Parallel task worker processes |
-| `SENTRY_SYSTEM_SECRET_ | **Required.** Django secret key (set in sentry.env) |KEY` | 
+| `SENTRY_SYSTEM_SECRET_KEY` | — | **Required.** Django secret key (set in `sentry.env`) |
 
 ## Upgrading from 25.x
 
-1. Stop the stack
-2. Back up Postgres: `docker compose exec postgres pg_dumpall -U postgres > backup.sql`
+1. Back up Postgres: `docker compose exec postgres pg_dumpall -U postgres > backup.sql`
+2. Stop the stack
 3. Update images in `.env`
-4. Run migrations: `docker compose run --rm web upgrade --noinput`
+4. Run migrations: `docker compose --env-file .env --env-file .env.local run --rm web upgrade --noinput`
 5. Restart
 
 ## Upgrading from 24.x
