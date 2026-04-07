@@ -69,7 +69,7 @@ docker compose run --rm relay credentials show
 docker compose run --rm web config generate-secret-key
 ```
 
-Copy the output into `sentry.env` as `SENTRY_SYSTEM_SECRET_KEY`.
+Copy the output into `sentry.env` as `SENTRY_SECRET_KEY`.
 
 ### 5. Run database migrations
 
@@ -114,7 +114,7 @@ services/sentry/
  docker-compose.yml
  .env                      # Image version pins (committed)
  .env.example              # Configuration template
- sentry.env                # Sentry runtime env vars (set SENTRY_SYSTEM_SECRET_KEY!)
+ sentry.env                # Sentry runtime env vars (set SENTRY_SECRET_KEY!)
  sentry/                   # Reference config — customize via named volume after init
    sentry.conf.py          # Django settings reference
    config.yml              # Sentry YAML options reference
@@ -133,7 +133,7 @@ services/sentry/
 | `SENTRY_EVENT_RETENTION_DAYS` | `90` | Days to retain event data |
 | `SENTRY_MAIL_HOST` | — | FQDN for outbound mail (e.g. `sentry.example.com`) |
 | `SENTRY_TASKWORKER_CONCURRENCY` | `4` | Parallel task worker processes |
-| `SENTRY_SYSTEM_SECRET_KEY` | — | **Required.** Django secret key (set in `sentry.env`) |
+| `SENTRY_SECRET_KEY` | — | **Required.** Django secret key (set in `sentry.env`) |
 
 ## Upgrading from 25.x
 
@@ -146,7 +146,7 @@ services/sentry/
 ## Upgrading from 24.x
 
 The internal architecture changed significantly in 25.x+:
- `SENTRY_SYSTEM_SECRET_KEY`
+ `SENTRY_SECRET_KEY`
  many specialized Kafka consumers
 - PostgreSQL trust auth replaces password auth (pgbouncer handles connections)
 - Redis, ClickHouse, Kafka, Snuba, Relay, Symbolicator are now required

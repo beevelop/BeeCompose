@@ -23,21 +23,22 @@ DATABASES = {
     }
 }
 
-# Prefer SENTRY_SYSTEM_SECRET_KEY; fall back to SENTRY_SECRET_KEY for compatibility
-SENTRY_SYSTEM_SECRET_KEY = os.environ.get(
-    "SENTRY_SYSTEM_SECRET_KEY",
-    os.environ.get("SENTRY_SECRET_KEY", ""),
+# The image's built-in conf.py reads SENTRY_SECRET_KEY.
+# This custom config accepts both names for forward/backward compatibility.
+_secret_key = os.environ.get(
+    "SENTRY_SECRET_KEY",
+    os.environ.get("SENTRY_SYSTEM_SECRET_KEY", ""),
 )
 
-if not SENTRY_SYSTEM_SECRET_KEY or SENTRY_SYSTEM_SECRET_KEY.startswith("!!changeme!!"):
+if not _secret_key or _secret_key.startswith("!!changeme!!"):
     raise RuntimeError(
-        "SENTRY_SYSTEM_SECRET_KEY is not set or still uses the placeholder value. "
+        "SENTRY_SECRET_KEY is not set or still uses the placeholder value. "
         "Generate a key with: docker compose run --rm web config generate-secret-key"
     )
 
-SECRET_KEY = SENTRY_SYSTEM_SECRET_KEY
+SECRET_KEY = _secret_key
 
-SENTRY_OPTIONS["system.secret-key"] = SENTRY_SYSTEM_SECRET_KEY
+SENTRY_OPTIONS["system.secret-key"] = _secret_key
 
 # Redis
 SENTRY_OPTIONS["redis.clusters"] = {
