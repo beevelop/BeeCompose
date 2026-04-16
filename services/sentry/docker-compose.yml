@@ -901,7 +901,7 @@ services:
       - feature-complete
 
   vroom:
-    image: "${VROOM_IMAGE:-ghcr.io/getsentry/vroom:26.3.1}"
+    image: "${VROOM_IMAGE:-ghcr.io/getsentry/vroom:26.4.0}"
     container_name: sentry-vroom
     depends_on:
       kafka:
@@ -936,7 +936,7 @@ services:
       - feature-complete
 
   vroom-cleanup:
-    image: "${VROOM_IMAGE:-ghcr.io/getsentry/vroom:26.3.1}"
+    image: "${VROOM_IMAGE:-ghcr.io/getsentry/vroom:26.4.0}"
     container_name: sentry-vroom-cleanup
     depends_on:
       vroom:
