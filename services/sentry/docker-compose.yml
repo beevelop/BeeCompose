@@ -866,7 +866,7 @@ services:
       - feature-complete
 
   uptime-checker:
-    image: "${UPTIME_CHECKER_IMAGE:-ghcr.io/getsentry/uptime-checker:26.4.0}"
+    image: "${UPTIME_CHECKER_IMAGE:-ghcr.io/getsentry/uptime-checker:26.4.1}"
     container_name: sentry-uptime-checker
     depends_on:
       kafka:
