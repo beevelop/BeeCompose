@@ -85,7 +85,7 @@ jobs:
       warning_count: ${{ steps.lint.outputs.warning_count }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Discover compose files to lint
         id: find-files
@@ -194,7 +194,7 @@ jobs:
             2>/dev/null || true
 
       - name: Upload lint results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: always()
         with:
           name: dclint-results
@@ -227,7 +227,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Install shellcheck
         run: sudo apt-get install -y shellcheck
@@ -256,7 +256,7 @@ jobs:
       bc_count: ${{ steps.coverage.outputs.bc_count }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Check service coverage
         id: coverage
@@ -320,7 +320,7 @@ jobs:
       bind_mount_count: ${{ steps.validate.outputs.bind_mount_count }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Check OCI compatibility
         id: validate
@@ -468,7 +468,7 @@ jobs:
       service_count: ${{ steps.discover.outputs.service_count }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Discover Docker Compose services
         id: discover
@@ -571,7 +571,7 @@ jobs:
       image_count: ${{ steps.extract.outputs.image_count }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Extract unique images from all compose files
         id: extract
@@ -653,7 +653,7 @@ jobs:
         image: ${{ fromJson(needs.extract-images.outputs.images) }}
     steps:
       - name: Install Trivy
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
           scan-type: 'image'
           image-ref: ${{ matrix.image }}
@@ -718,7 +718,7 @@ jobs:
           echo "safe_name=${SAFE_NAME}" >> $GITHUB_OUTPUT
 
       - name: Upload individual scan result
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: cve-scan-${{ steps.parse.outputs.safe_name }}
           path: ${{ steps.parse.outputs.safe_name }}.json
@@ -738,7 +738,7 @@ jobs:
       scan_passed: ${{ steps.summarize.outputs.scan_passed }}
     steps:
       - name: Download all scan artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           pattern: cve-scan-*
           path: scan-results/
@@ -842,7 +842,7 @@ jobs:
           echo "CVE scan completed - report generated (non-blocking)"
 
       - name: Upload aggregated results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: cve-scan-results
           path: |
@@ -874,7 +874,7 @@ jobs:
         service: ${{ fromJson(needs.discover.outputs.services) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Test service
         id: test
@@ -1021,7 +1021,7 @@ jobs:
           fi
 
       - name: Upload test result
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: always()
         with:
           name: test-result-${{ matrix.service }}
@@ -1042,7 +1042,7 @@ jobs:
       all_passed: ${{ steps.summarize.outputs.all_passed }}
     steps:
       - name: Download all test results
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           pattern: test-result-*
           path: all-results/
@@ -1119,7 +1119,7 @@ jobs:
           fi
 
       - name: Upload aggregated results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: docker-compose-test-results
           path: |
