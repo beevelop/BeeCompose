@@ -21,7 +21,7 @@ x-restart-policy: &restart_policy
   restart: unless-stopped
 
 x-sentry-defaults: &sentry_defaults
-  image: "${SENTRY_IMAGE:-ghcr.io/getsentry/sentry:26.4.0}"
+  image: "${SENTRY_IMAGE:-ghcr.io/getsentry/sentry:26.4.1}"
   depends_on:
     redis:
       <<: *depends_on-healthy
