@@ -418,7 +418,7 @@ services:
         max-file: "50"
 
   relay:
-    image: "${RELAY_IMAGE:-ghcr.io/getsentry/relay:26.3.1}"
+    image: "${RELAY_IMAGE:-ghcr.io/getsentry/relay:26.4.1}"
     container_name: sentry-relay
     depends_on:
       kafka:
