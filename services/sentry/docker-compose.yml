@@ -817,7 +817,7 @@ services:
         max-file: "50"
 
   taskbroker:
-    image: "${TASKBROKER_IMAGE:-ghcr.io/getsentry/taskbroker:26.3.1}"
+    image: "${TASKBROKER_IMAGE:-ghcr.io/getsentry/taskbroker:26.4.1}"
     container_name: sentry-taskbroker
     depends_on:
       kafka:
