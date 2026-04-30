@@ -70,7 +70,7 @@ x-sentry-defaults: &sentry_defaults
       max-file: "50"
 
 x-snuba-defaults: &snuba_defaults
-  image: "${SNUBA_IMAGE:-ghcr.io/getsentry/snuba:26.3.1}"
+  image: "${SNUBA_IMAGE:-ghcr.io/getsentry/snuba:26.4.1}"
   depends_on:
     clickhouse:
       <<: *depends_on-healthy
