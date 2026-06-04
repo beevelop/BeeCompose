@@ -70,7 +70,7 @@ x-sentry-defaults: &sentry_defaults
       max-file: "50"
 
 x-snuba-defaults: &snuba_defaults
-  image: "${SNUBA_IMAGE:-ghcr.io/getsentry/snuba:26.5.0}"
+  image: "${SNUBA_IMAGE:-ghcr.io/getsentry/snuba:26.5.2}"
   depends_on:
     clickhouse:
       <<: *depends_on-healthy
@@ -817,7 +817,7 @@ services:
         max-file: "50"
 
   taskbroker:
-    image: "${TASKBROKER_IMAGE:-ghcr.io/getsentry/taskbroker:26.5.1}"
+    image: "${TASKBROKER_IMAGE:-ghcr.io/getsentry/taskbroker:26.5.2}"
     container_name: sentry-taskbroker
     depends_on:
       kafka:
