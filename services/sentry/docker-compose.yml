@@ -778,7 +778,7 @@ services:
       - feature-complete
 
   symbolicator:
-    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.4.2}"
+    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.5.2}"
     container_name: sentry-symbolicator
     volumes:
       - sentry-symbolicator:/data
@@ -799,7 +799,7 @@ services:
         max-file: "50"
 
   symbolicator-cleanup:
-    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.4.2}"
+    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.5.2}"
     container_name: sentry-symbolicator-cleanup
     volumes:
       - sentry-symbolicator:/data
