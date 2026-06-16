@@ -46,7 +46,7 @@ services:
       - "traefik.http.middlewares.dashboard-auth.basicauth.users=${TRAEFIK_AUTH:-admin:$$apr1$$changeme}"
 
   traefik-init:
-    image: alpine:3.23
+    image: alpine:3.24
     container_name: traefik-init
     volumes:
       - traefik_config:/config
