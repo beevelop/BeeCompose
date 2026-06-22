@@ -54,7 +54,7 @@ jobs:
       updates: ${{ steps.check.outputs.updates }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         run: |
@@ -250,7 +250,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Update .env file
         run: |

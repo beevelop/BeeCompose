@@ -85,7 +85,7 @@ jobs:
       warning_count: ${{ steps.lint.outputs.warning_count }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Discover compose files to lint
         id: find-files
@@ -227,7 +227,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install shellcheck
         run: sudo apt-get install -y shellcheck
@@ -256,7 +256,7 @@ jobs:
       bc_count: ${{ steps.coverage.outputs.bc_count }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Check service coverage
         id: coverage
@@ -320,7 +320,7 @@ jobs:
       bind_mount_count: ${{ steps.validate.outputs.bind_mount_count }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Check OCI compatibility
         id: validate
@@ -468,7 +468,7 @@ jobs:
       service_count: ${{ steps.discover.outputs.service_count }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Discover Docker Compose services
         id: discover
@@ -571,7 +571,7 @@ jobs:
       image_count: ${{ steps.extract.outputs.image_count }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Extract unique images from all compose files
         id: extract
@@ -874,7 +874,7 @@ jobs:
         service: ${{ fromJson(needs.discover.outputs.services) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Test service
         id: test
