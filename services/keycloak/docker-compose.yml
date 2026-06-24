@@ -1,7 +1,7 @@
 name: keycloak
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION:-26.5.5}
+    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION:-26.6.3}
     container_name: keycloak
     depends_on:
       - postgres
@@ -12,7 +12,7 @@ services:
       KC_DB_PASSWORD: ${POSTGRES_PASS:-Swordfish}
       KEYCLOAK_ADMIN: ${KEYCLOAK_USER:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_PASSWORD:-Swordfish}
-      KC_PROXY: edge
+      KC_PROXY_HEADERS: ${KC_PROXY_HEADERS:-xforwarded}
       KC_HOSTNAME: ${SERVICE_DOMAIN:-example.com}
       KC_HTTP_ENABLED: "true"
       KC_HEALTH_ENABLED: "true"

@@ -81,7 +81,7 @@ docker compose -f oci://ghcr.io/beevelop/metabase:latest --env-file .env.metabas
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `COMPOSE_PROJECT_NAME` | `traefik` | Docker Compose project name |
-| `TRAEFIK_VERSION` | `v3.6` | Traefik image version |
+| `TRAEFIK_VERSION` | `v3.7` | Traefik image version |
 | `TRAEFIK_DOMAIN` | `traefik.example.com` | Domain for dashboard (via tunnel) |
 | `TRAEFIK_AUTH` | `admin:$$apr1$$changeme` | Basic auth for dashboard |
 

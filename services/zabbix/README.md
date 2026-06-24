@@ -68,9 +68,9 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| zabbix-web | zabbix/zabbix-web-nginx-mysql:7.2-alpine-latest | Web frontend (Nginx + PHP) |
-| zabbix-server | zabbix/zabbix-server-mysql:7.2-alpine-latest | Zabbix server daemon |
-| zabbix-mariadb | mariadb:11.7 | MariaDB database |
+| zabbix-web | zabbix/zabbix-web-nginx-mysql:7.4.11-alpine | Web frontend (Nginx + PHP) |
+| zabbix-server | zabbix/zabbix-server-mysql:7.4.11-alpine | Zabbix server daemon |
+| zabbix-mariadb | mariadb:12.2 | MariaDB database |
 
 ## Environment Variables
 

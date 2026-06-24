@@ -17,7 +17,7 @@ This is a **Docker Compose OCI artifact**, not a traditional Docker image. It co
 cat > .env.nexus << 'EOF'
 COMPOSE_PROJECT_NAME=nexus
 SERVICE_DOMAIN=nexus.example.com
-NEXUS_VERSION=3.88.0-alpine
+NEXUS_VERSION=3.93.1-alpine
 EOF
 
 # 2. Deploy
@@ -36,7 +36,7 @@ bc nexus ps
 cat > .env.nexus << 'EOF'
 COMPOSE_PROJECT_NAME=nexus
 SERVICE_DOMAIN=nexus.example.com
-NEXUS_VERSION=3.88.0-alpine
+NEXUS_VERSION=3.93.1-alpine
 EOF
 
 # 2. Deploy from GHCR
@@ -56,7 +56,7 @@ docker compose -f oci://ghcr.io/beevelop/nexus:latest --env-file .env.nexus ps
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| nexus | sonatype/nexus3:3.88.0-alpine | Nexus Repository Manager |
+| nexus | sonatype/nexus3:3.93.1-alpine | Nexus Repository Manager |
 
 ## Environment Variables
 
@@ -71,7 +71,7 @@ docker compose -f oci://ghcr.io/beevelop/nexus:latest --env-file .env.nexus ps
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `nexus` |
-| `NEXUS_VERSION` | Nexus image version | `3.88.0-alpine` |
+| `NEXUS_VERSION` | Nexus image version | `3.93.1-alpine` |
 
 ## Volumes
 

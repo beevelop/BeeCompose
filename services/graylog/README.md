@@ -80,8 +80,8 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| graylog | graylog/graylog:6.2 | Log management web interface and API |
-| graylog-elasticsearch | elasticsearch:7.17.27 | Search and indexing engine |
+| graylog | graylog/graylog:6.3 | Log management web interface and API |
+| graylog-elasticsearch | docker.elastic.co/elasticsearch/elasticsearch:7.17.29 | Search and indexing engine |
 | graylog-mongodb | mongo:8.0 | Configuration and metadata storage |
 
 ## Environment Variables

@@ -85,7 +85,7 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `metabase` |
 | `DB_USER` | PostgreSQL username | `metabase` |
 | `DB_NAME` | PostgreSQL database name | `metabase` |
-| `METABASE_VERSION` | Metabase image tag | `latest` |
+| `METABASE_VERSION` | Metabase image tag | `v0.62.3.2` |
 | `POSTGRES_TAG` | PostgreSQL image tag | `15-alpine` |
 
 ## Volumes

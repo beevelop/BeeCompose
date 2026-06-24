@@ -35,7 +35,7 @@ services:
       - "traefik.docker.network=traefik_default"
 
   mysql:
-    image: mysql:${MYSQL_TAG:-8.0}
+    image: mysql:${MYSQL_TAG:-8.4}
     container_name: monica-mysql
     volumes:
       - mysql_data:/var/lib/mysql

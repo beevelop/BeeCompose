@@ -1,7 +1,7 @@
 name: n8n
 services:
   n8n:
-    image: n8nio/n8n:${N8N_VERSION:-2.12.3}
+    image: n8nio/n8n:${N8N_VERSION:-2.28.1}
     container_name: n8n
     depends_on:
       postgres:
@@ -20,6 +20,7 @@ services:
       N8N_PORT: 5678
       N8N_PROTOCOL: https
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_RUNNERS_ENABLED: ${N8N_RUNNERS_ENABLED:-true}
       NODE_ENV: production
       WEBHOOK_URL: https://${SERVICE_DOMAIN:-n8n.example.com}/
       GENERIC_TIMEZONE: ${TZ:-UTC}

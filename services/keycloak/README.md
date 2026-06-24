@@ -91,7 +91,7 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `keycloak` |
 | `POSTGRES_DB` | PostgreSQL database name | `keycloak` |
 | `POSTGRES_USER` | PostgreSQL username | `keycloak` |
-| `KEYCLOAK_VERSION` | Keycloak image tag | `26.2` |
+| `KEYCLOAK_VERSION` | Keycloak image tag | `26.6.3` |
 | `POSTGRES_VERSION` | PostgreSQL image tag | `17` |
 
 ## Volumes
@@ -144,7 +144,7 @@ dc pull && dc up -d
 Keycloak has a `start_period` of 90 seconds. Wait for the container to become healthy. Check logs with `docker logs keycloak`.
 
 ### Cannot access admin console
-Ensure `KC_PROXY=edge` is set (default in this configuration) when running behind a reverse proxy like Traefik.
+Ensure `KC_PROXY_HEADERS=xforwarded` is set (default in this configuration) when running behind a reverse proxy like Traefik.
 
 ### Database connection errors
 Verify PostgreSQL is running and healthy: `docker logs keycloak-postgres`

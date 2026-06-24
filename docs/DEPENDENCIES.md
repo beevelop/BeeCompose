@@ -33,11 +33,11 @@ This document maps dependencies between BeeCompose services and their backing st
 | cabot | postgres | 17-alpine |
 | confluence | postgresql | 17-alpine |
 | crowd | postgresql | 17-alpine |
-| gitlab | database | sameersbn/postgresql:15-20230628 |
+| gitlab | database | kkimurak/sameersbn-postgresql:17 |
 | huginn | postgres | 17-alpine |
 | jira | postgresql | 17-alpine |
 | keycloak | postgres | 17 |
-| metabase | database | 17-alpine |
+| metabase | database | 15-alpine |
 | redash | postgres | 17-alpine |
 | sentry | postgres | 17-alpine |
 | sonarqube | database | 17-alpine |
@@ -48,11 +48,11 @@ This document maps dependencies between BeeCompose services and their backing st
 
 | Service | Container Name | Version |
 |---------|---------------|---------|
-| directus | mysql | 8.0 |
-| monica | mysql | 8.0 |
-| mysql | mysql | 8.0 |
+| directus | mysql | 8.4 |
+| monica | mysql | 8.4 |
+| mysql | mysql | 8.4 |
 | rundeck | (embedded) | - |
-| zabbix | database | mariadb:11.7 |
+| zabbix | database | mariadb:12.2 |
 
 ### Redis Services
 
@@ -69,7 +69,7 @@ This document maps dependencies between BeeCompose services and their backing st
 | Service | Database | Container Name | Version |
 |---------|----------|---------------|---------|
 | graylog | MongoDB | mongodb | 8.0 |
-| graylog | Elasticsearch | elasticsearch | 7.17.27 |
+| graylog | Elasticsearch | elasticsearch | 7.17.29 |
 
 ### Cache Services
 

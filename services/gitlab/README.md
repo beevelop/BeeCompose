@@ -22,6 +22,9 @@ GITLAB_ROOT_PASSWORD=Swordfish
 GITLAB_SECRETS_DB_KEY_BASE=1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
 GITLAB_SECRETS_SECRET_KEY_BASE=1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
 GITLAB_SECRETS_OTP_KEY_BASE=1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY=["1234567890abcdef1234567890abcdef"]
+GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY=["abcdef1234567890abcdef1234567890"]
+GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT=fedcba0987654321fedcba0987654321
 EOF
 
 # 2. Deploy
@@ -45,6 +48,9 @@ GITLAB_ROOT_PASSWORD=Swordfish
 GITLAB_SECRETS_DB_KEY_BASE=1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
 GITLAB_SECRETS_SECRET_KEY_BASE=1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
 GITLAB_SECRETS_OTP_KEY_BASE=1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY=["1234567890abcdef1234567890abcdef"]
+GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY=["abcdef1234567890abcdef1234567890"]
+GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT=fedcba0987654321fedcba0987654321
 EOF
 
 # 2. Deploy from GHCR
@@ -67,7 +73,7 @@ This service includes all required backing stores:
 
 | Dependency | Container | Purpose |
 |------------|-----------|---------|
-| PostgreSQL | gitlab-postgres | Primary database (sameersbn/postgresql) |
+| PostgreSQL | gitlab-postgres | Primary database (kkimurak/sameersbn-postgresql) |
 | Redis | gitlab-redis | Cache and session store |
 
 See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
@@ -76,8 +82,8 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| gitlab | sameersbn/gitlab:18.8.0 | GitLab application server |
-| gitlab-postgres | sameersbn/postgresql:15-20230628 | PostgreSQL database |
+| gitlab | sameersbn/gitlab:19.1.0 | GitLab application server |
+| gitlab-postgres | kkimurak/sameersbn-postgresql:17 | PostgreSQL database |
 | gitlab-redis | redis:7-alpine | Redis cache and session store |
 
 ## Environment Variables
@@ -92,6 +98,9 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 | `GITLAB_SECRETS_DB_KEY_BASE` | 64-char hex key for database encryption | Generate with `openssl rand -hex 64` |
 | `GITLAB_SECRETS_SECRET_KEY_BASE` | 64-char hex key for session secrets | Generate with `openssl rand -hex 64` |
 | `GITLAB_SECRETS_OTP_KEY_BASE` | 64-char hex key for OTP encryption | Generate with `openssl rand -hex 64` |
+| `GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` | JSON array of key(s) for ActiveRecord encryption (GitLab 19+) | `["<32-char-key>"]` (generate with `openssl rand -hex 16`) |
+| `GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY` | JSON array of key(s) for deterministic encryption (GitLab 19+) | `["<32-char-key>"]` (generate with `openssl rand -hex 16`) |
+| `GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` | Salt string for key derivation (GitLab 19+) | `<32-char-salt>` (generate with `openssl rand -hex 16`) |
 
 ### Optional
 

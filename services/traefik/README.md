@@ -61,8 +61,8 @@ docker compose -f oci://ghcr.io/beevelop/traefik:latest --env-file .env.traefik 
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| traefik | traefik:v3.6 | Reverse proxy and load balancer |
-| traefik-init | alpine:3.23 | Configuration generator (runs once) |
+| traefik | traefik:v3.7 | Reverse proxy and load balancer |
+| traefik-init | alpine:3.24 | Configuration generator (runs once) |
 
 ## Environment Variables
 
@@ -78,7 +78,7 @@ docker compose -f oci://ghcr.io/beevelop/traefik:latest --env-file .env.traefik 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `COMPOSE_PROJECT_NAME` | `traefik` | Docker Compose project name |
-| `TRAEFIK_VERSION` | `v3.6` | Traefik image version |
+| `TRAEFIK_VERSION` | `v3.7` | Traefik image version |
 | `TRAEFIK_DOMAIN` | `traefik.example.com` | Domain for Traefik dashboard |
 | `TRAEFIK_EMAIL` | Uses `CLOUDFLARE_EMAIL` | Email for Let's Encrypt notifications |
 | `TRAEFIK_AUTH` | `admin:$$apr1$$changeme` | Basic auth for dashboard (htpasswd format) |

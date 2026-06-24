@@ -1,7 +1,7 @@
 name: confluence
 services:
   confluence:
-    image: atlassian/confluence:${CONFLUENCE_VERSION:-9.4.1-ubi9-jdk21}
+    image: atlassian/confluence:${CONFLUENCE_VERSION:-10.2.13-ubi9-jdk21}
     container_name: confluence
     depends_on:
       - postgresql

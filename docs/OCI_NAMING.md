@@ -35,7 +35,7 @@ Versions are extracted from the service's `.env` file, specifically from the fir
 | Service | `.env` Variable | OCI Tag |
 |---------|-----------------|---------|
 | GitLab | `GITLAB_VERSION=18.8.0` | `ghcr.io/beevelop/gitlab:v18.8.0` |
-| Traefik | `TRAEFIK_VERSION=v3.6` | `ghcr.io/beevelop/traefik:v3.6` |
+| Traefik | `TRAEFIK_VERSION=v3.7` | `ghcr.io/beevelop/traefik:v3.7` |
 | Metabase | `METABASE_VERSION=v0.58.2` | `ghcr.io/beevelop/metabase:v0.58.2` |
 
 ## Versioning Rules

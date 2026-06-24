@@ -75,8 +75,8 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 | Container | Image | Purpose |
 |-----------|-------|---------|
 | redash-nginx | redash/nginx:latest | Nginx reverse proxy |
-| redash-server | redash/redash:25.1.0 | Redash web server |
-| redash-worker | redash/redash:25.1.0 | Background job scheduler |
+| redash-server | redash/redash:26.3.0 | Redash web server |
+| redash-worker | redash/redash:26.3.0 | Background job scheduler |
 | redash-postgres | postgres:17-alpine | PostgreSQL database |
 | redash-redis | redis:7-alpine | Redis cache and queue |
 
@@ -94,7 +94,7 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `redash` |
-| `REDASH_VERSION` | Redash image version | `25.1.0` |
+| `REDASH_VERSION` | Redash image version | `26.3.0` |
 | `REDASH_NGINX_VERSION` | Nginx image version | `latest` |
 | `REDIS_TAG` | Redis image tag | `7-alpine` |
 | `POSTGRES_TAG` | PostgreSQL image tag | `17-alpine` |

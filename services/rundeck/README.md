@@ -56,7 +56,7 @@ docker compose -f oci://ghcr.io/beevelop/rundeck:latest --env-file .env.rundeck 
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| rundeck | jordan/rundeck:5.18.0 | Rundeck server with embedded MySQL |
+| rundeck | jordan/rundeck:5.20.1 | Rundeck server with embedded MySQL |
 
 ## Environment Variables
 
@@ -72,7 +72,7 @@ docker compose -f oci://ghcr.io/beevelop/rundeck:latest --env-file .env.rundeck 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `rundeck` |
-| `RUNDECK_VERSION` | Rundeck image version | `5.18.0` |
+| `RUNDECK_VERSION` | Rundeck image version | `5.20.1` |
 
 ## Volumes
 

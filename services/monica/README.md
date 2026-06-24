@@ -119,7 +119,7 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 | Container | Image | Purpose |
 |-----------|-------|---------|
 | monica | monica:5.0.0-beta.5-apache | Monica PRM application |
-| monica-mysql | mysql:8.0 | MySQL database |
+| monica-mysql | mysql:8.4 | MySQL database |
 
 ## Environment Variables
 
@@ -139,7 +139,7 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 | `DB_USER` | MySQL username | `monica` |
 | `DB_NAME` | MySQL database name | `monica` |
 | `MONICA_VERSION` | Monica image tag | `5.0.0-beta.5-apache` |
-| `MYSQL_TAG` | MySQL image tag | `8.0` |
+| `MYSQL_TAG` | MySQL image tag | `8.4` |
 
 ### Application Settings (monica.env)
 
