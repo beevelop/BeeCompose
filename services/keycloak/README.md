@@ -144,7 +144,7 @@ dc pull && dc up -d
 Keycloak has a `start_period` of 90 seconds. Wait for the container to become healthy. Check logs with `docker logs keycloak`.
 
 ### Cannot access admin console
-Ensure `KC_PROXY=edge` is set (default in this configuration) when running behind a reverse proxy like Traefik.
+Ensure `KC_PROXY_HEADERS=xforwarded` is set (default in this configuration) when running behind a reverse proxy like Traefik.
 
 ### Database connection errors
 Verify PostgreSQL is running and healthy: `docker logs keycloak-postgres`

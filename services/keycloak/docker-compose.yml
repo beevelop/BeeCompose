@@ -12,7 +12,7 @@ services:
       KC_DB_PASSWORD: ${POSTGRES_PASS:-Swordfish}
       KEYCLOAK_ADMIN: ${KEYCLOAK_USER:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_PASSWORD:-Swordfish}
-      KC_PROXY_HEADERS: xforwarded
+      KC_PROXY_HEADERS: ${KC_PROXY_HEADERS:-xforwarded}
       KC_HOSTNAME: ${SERVICE_DOMAIN:-example.com}
       KC_HTTP_ENABLED: "true"
       KC_HEALTH_ENABLED: "true"

@@ -20,7 +20,7 @@ services:
       N8N_PORT: 5678
       N8N_PROTOCOL: https
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
-      N8N_RUNNERS_ENABLED: "true"
+      N8N_RUNNERS_ENABLED: ${N8N_RUNNERS_ENABLED:-true}
       NODE_ENV: production
       WEBHOOK_URL: https://${SERVICE_DOMAIN:-n8n.example.com}/
       GENERIC_TIMEZONE: ${TZ:-UTC}

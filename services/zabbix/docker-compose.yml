@@ -26,7 +26,7 @@ services:
         max-file: "50"
 
   server:
-    image: zabbix/zabbix-server-mysql:${ZABBIX_VERSION:-7.4-alpine-latest}
+    image: zabbix/zabbix-server-mysql:${ZABBIX_VERSION:-7.4.11-alpine}
     container_name: zabbix-server
     depends_on:
       - database
@@ -57,7 +57,7 @@ services:
         max-file: "50"
 
   web:
-    image: zabbix/zabbix-web-nginx-mysql:${ZABBIX_VERSION:-7.4-alpine-latest}
+    image: zabbix/zabbix-web-nginx-mysql:${ZABBIX_VERSION:-7.4.11-alpine}
     container_name: zabbix-web
     depends_on:
       - database

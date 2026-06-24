@@ -18,8 +18,8 @@ services:
       DB_USER: ${DB_USER:-directus}
       DB_PASSWORD: ${DB_PASS:-Swordfish}
       PUBLIC_URL: https://${SERVICE_DOMAIN:-example.com}
-      IP_TRUST_PROXY: "true"
-      ACCEPT_TERMS: "true"
+      IP_TRUST_PROXY: ${IP_TRUST_PROXY:-true}
+      ACCEPT_TERMS: ${ACCEPT_TERMS:-true}
     networks:
       - directus
       - traefik
