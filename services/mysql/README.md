@@ -16,7 +16,7 @@ This is a **Docker Compose OCI artifact**, not a traditional Docker image. It co
 # 1. Create environment file
 cat > .env.mysql << 'EOF'
 COMPOSE_PROJECT_NAME=mysql
-MYSQL_VERSION=8.0
+MYSQL_VERSION=8.4
 MYSQL_ROOT_PASSWORD=Swordfish
 EOF
 
@@ -35,7 +35,7 @@ bc mysql ps
 # 1. Create environment file
 cat > .env.mysql << 'EOF'
 COMPOSE_PROJECT_NAME=mysql
-MYSQL_VERSION=8.0
+MYSQL_VERSION=8.4
 MYSQL_ROOT_PASSWORD=Swordfish
 EOF
 
@@ -55,7 +55,7 @@ docker compose -f oci://ghcr.io/beevelop/mysql:latest --env-file .env.mysql ps
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| mysql | mysql:8.0 | MySQL database server |
+| mysql | mysql:8.4 | MySQL database server |
 
 ## Environment Variables
 
@@ -70,7 +70,7 @@ docker compose -f oci://ghcr.io/beevelop/mysql:latest --env-file .env.mysql ps
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `mysql` |
-| `MYSQL_VERSION` | MySQL image version | `8.0` |
+| `MYSQL_VERSION` | MySQL image version | `8.4` |
 
 ## Volumes
 

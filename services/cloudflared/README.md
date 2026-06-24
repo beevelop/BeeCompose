@@ -144,7 +144,7 @@ docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `cloudflared` |
-| `CLOUDFLARED_VERSION` | cloudflared image version | `2025.1.0` |
+| `CLOUDFLARED_VERSION` | cloudflared image version | `2026.6.1` |
 
 ## Deployment Modes
 

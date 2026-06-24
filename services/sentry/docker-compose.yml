@@ -70,7 +70,7 @@ x-sentry-defaults: &sentry_defaults
       max-file: "50"
 
 x-snuba-defaults: &snuba_defaults
-  image: "${SNUBA_IMAGE:-ghcr.io/getsentry/snuba:26.5.2}"
+  image: "${SNUBA_IMAGE:-ghcr.io/getsentry/snuba:26.6.0}"
   depends_on:
     clickhouse:
       <<: *depends_on-healthy
@@ -360,7 +360,7 @@ services:
       - feature-complete
 
   postgres:
-    image: "postgres:${POSTGRES_TAG:-14.19-bookworm}"
+    image: "postgres:${POSTGRES_TAG:-14.23-bookworm}"
     container_name: sentry-postgres
     volumes:
       - sentry-postgres:/var/lib/postgresql/data
@@ -456,7 +456,7 @@ services:
   ##################################
 
   seaweedfs:
-    image: "chrislusf/seaweedfs:${SEAWEEDFS_TAG:-4.09_large_disk}"
+    image: "chrislusf/seaweedfs:${SEAWEEDFS_TAG:-4.17_large_disk}"
     container_name: sentry-seaweedfs
     volumes:
       - sentry-seaweedfs:/data
@@ -778,7 +778,7 @@ services:
       - feature-complete
 
   symbolicator:
-    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.5.2}"
+    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.6.0}"
     container_name: sentry-symbolicator
     volumes:
       - sentry-symbolicator:/data
@@ -799,7 +799,7 @@ services:
         max-file: "50"
 
   symbolicator-cleanup:
-    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.5.2}"
+    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.6.0}"
     container_name: sentry-symbolicator-cleanup
     volumes:
       - sentry-symbolicator:/data
@@ -817,7 +817,7 @@ services:
         max-file: "50"
 
   taskbroker:
-    image: "${TASKBROKER_IMAGE:-ghcr.io/getsentry/taskbroker:26.5.2}"
+    image: "${TASKBROKER_IMAGE:-ghcr.io/getsentry/taskbroker:26.6.0}"
     container_name: sentry-taskbroker
     depends_on:
       kafka:
@@ -866,7 +866,7 @@ services:
       - feature-complete
 
   uptime-checker:
-    image: "${UPTIME_CHECKER_IMAGE:-ghcr.io/getsentry/uptime-checker:26.5.2}"
+    image: "${UPTIME_CHECKER_IMAGE:-ghcr.io/getsentry/uptime-checker:26.6.0}"
     container_name: sentry-uptime-checker
     depends_on:
       kafka:

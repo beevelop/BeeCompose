@@ -54,7 +54,7 @@ docker compose -f oci://ghcr.io/beevelop/tus:latest --env-file .env.tus ps
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| tus | tusproject/tusd:v2.8.0 | TUS upload server |
+| tus | tusproject/tusd:v2.10.0 | TUS upload server |
 
 ## Environment Variables
 

@@ -72,8 +72,8 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| directus | directus/directus:11.14.1 | Headless CMS / Data Platform |
-| directus-mysql | mysql:8.0 | MySQL database backend |
+| directus | directus/directus:12.0.2 | Headless CMS / Data Platform |
+| directus-mysql | mysql:8.4 | MySQL database backend |
 
 ## Environment Variables
 

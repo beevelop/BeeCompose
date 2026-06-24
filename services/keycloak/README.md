@@ -91,7 +91,7 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `keycloak` |
 | `POSTGRES_DB` | PostgreSQL database name | `keycloak` |
 | `POSTGRES_USER` | PostgreSQL username | `keycloak` |
-| `KEYCLOAK_VERSION` | Keycloak image tag | `26.2` |
+| `KEYCLOAK_VERSION` | Keycloak image tag | `26.6.3` |
 | `POSTGRES_VERSION` | PostgreSQL image tag | `17` |
 
 ## Volumes

@@ -96,7 +96,7 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `n8n` |
 | `DB_USER` | PostgreSQL username | `n8n` |
 | `DB_NAME` | PostgreSQL database name | `n8n` |
-| `N8N_VERSION` | n8n image tag | `1.76.1` |
+| `N8N_VERSION` | n8n image tag | `2.28.1` |
 | `POSTGRES_VERSION` | PostgreSQL image tag | `16-alpine` |
 | `TZ` | Timezone for workflow scheduling (IANA format) | `UTC` |
 

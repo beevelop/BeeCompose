@@ -17,7 +17,7 @@ This is a **Docker Compose OCI artifact**, not a traditional Docker image. It co
 cat > .env.registry << 'EOF'
 COMPOSE_PROJECT_NAME=registry
 SERVICE_DOMAIN=registry.example.com
-REGISTRY_VERSION=3.0.0
+REGISTRY_VERSION=3.1.1
 EOF
 
 # 2. Deploy
@@ -36,7 +36,7 @@ bc registry ps
 cat > .env.registry << 'EOF'
 COMPOSE_PROJECT_NAME=registry
 SERVICE_DOMAIN=registry.example.com
-REGISTRY_VERSION=3.0.0
+REGISTRY_VERSION=3.1.1
 EOF
 
 # 2. Deploy from GHCR
@@ -56,7 +56,7 @@ docker compose -f oci://ghcr.io/beevelop/registry:latest --env-file .env.registr
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| registry | registry:3.0.0 | Docker Registry v2 API server |
+| registry | registry:3.1.1 | Docker Registry v2 API server |
 
 ## Environment Variables
 
@@ -71,7 +71,7 @@ docker compose -f oci://ghcr.io/beevelop/registry:latest --env-file .env.registr
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `registry` |
-| `REGISTRY_VERSION` | Registry image version | `3.0.0` |
+| `REGISTRY_VERSION` | Registry image version | `3.1.1` |
 
 ## Volumes
 

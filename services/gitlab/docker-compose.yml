@@ -1,7 +1,7 @@
 name: gitlab
 services:
   database:
-    image: sameersbn/postgresql:${POSTGRES_TAG:-15-20230628}
+    image: kkimurak/sameersbn-postgresql:${POSTGRES_TAG:-17}
     container_name: gitlab-postgres
     volumes:
       - postgres_data:/var/lib/postgresql
@@ -9,7 +9,7 @@ services:
       DB_NAME: ${DB_NAME:-gitlabhq_production}
       DB_USER: ${DB_USER:-gitlab}
       DB_PASS: ${DB_PASS:-Swordfish}
-      DB_EXTENSION: pg_trgm
+      DB_EXTENSION: pg_trgm,btree_gist
     networks:
       - gitlab
     restart: unless-stopped
@@ -26,7 +26,7 @@ services:
         max-file: "50"
 
   gitlab:
-    image: sameersbn/gitlab:${GITLAB_VERSION:-18.9.2}
+    image: sameersbn/gitlab:${GITLAB_VERSION:-19.1.0}
     container_name: gitlab
     depends_on:
       - database
@@ -57,6 +57,9 @@ services:
       GITLAB_SECRETS_DB_KEY_BASE: ${GITLAB_SECRETS_DB_KEY_BASE:-changeme64chars0000000000000000000000000000000000000000000000000}
       GITLAB_SECRETS_SECRET_KEY_BASE: ${GITLAB_SECRETS_SECRET_KEY_BASE:-changeme64chars0000000000000000000000000000000000000000000000000}
       GITLAB_SECRETS_OTP_KEY_BASE: ${GITLAB_SECRETS_OTP_KEY_BASE:-changeme64chars0000000000000000000000000000000000000000000000000}
+      GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY: '${GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY:-["changeme32charsprimarykey000001"]}'
+      GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY: '${GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY:-["changeme32charsdeterministic0002"]}'
+      GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT: ${GITLAB_SECRETS_ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT:-changeme32charsderivationsalt0003}
       # Features
       GITLAB_NOTIFY_ON_BROKEN_BUILDS: ${GITLAB_NOTIFY_ON_BROKEN_BUILDS:-true}
       GITLAB_PROJECTS_SNIPPETS: ${GITLAB_PROJECTS_SNIPPETS:-true}

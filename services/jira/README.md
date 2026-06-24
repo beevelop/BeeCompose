@@ -88,7 +88,7 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 | `POSTGRES_DB` | PostgreSQL database name | `jira` |
 | `JVM_MINIMUM_MEMORY` | JVM minimum heap size | `1024m` |
 | `JVM_MAXIMUM_MEMORY` | JVM maximum heap size | `2048m` |
-| `JIRA_VERSION` | Jira Software image tag | `10.6.1-ubi9-jdk17` |
+| `JIRA_VERSION` | Jira Software image tag | `11.3.7-ubi9-jdk21` |
 | `POSTGRES_TAG` | PostgreSQL image tag | `17-alpine` |
 
 ## Volumes

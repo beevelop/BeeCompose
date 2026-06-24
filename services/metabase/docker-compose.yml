@@ -25,7 +25,7 @@ services:
         max-file: "50"
 
   metabase:
-    image: metabase/metabase:${METABASE_VERSION:-v0.59.3.2}
+    image: metabase/metabase:${METABASE_VERSION:-v0.62.3.2}
     container_name: metabase
     depends_on:
       - database

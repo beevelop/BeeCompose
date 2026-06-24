@@ -104,7 +104,7 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| weblate | weblate/weblate:5.11 | Translation management web application |
+| weblate | weblate/weblate:2026.6 | Translation management web application |
 | weblate-postgres | postgres:17-alpine | PostgreSQL database |
 | weblate-redis | redis:7-alpine | Caching and task queue |
 | weblate-memcached | memcached:1.6-alpine | Session caching |

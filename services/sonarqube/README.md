@@ -81,7 +81,7 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| sonarqube | sonarqube:10-community | SonarQube analysis server |
+| sonarqube | sonarqube:26.6.0.123539-community | SonarQube analysis server |
 | sonarqube-db | postgres:17-alpine | PostgreSQL database |
 
 ## Environment Variables
@@ -97,7 +97,7 @@ See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `sonarqube` |
-| `SONARQUBE_VERSION` | SonarQube image version | `10-community` |
+| `SONARQUBE_VERSION` | SonarQube image version | `26.6.0.123539-community` |
 | `POSTGRES_TAG` | PostgreSQL image tag | `17-alpine` |
 
 ### Internal (Pre-configured)

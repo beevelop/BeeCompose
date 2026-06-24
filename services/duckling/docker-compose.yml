@@ -1,7 +1,7 @@
 name: duckling
 services:
   duckling:
-    image: rasa/duckling:${DUCKLING_VERSION:-0.2.0.2-r3}
+    image: rasa/duckling:${DUCKLING_VERSION:-0.2.0.2-r4}
     container_name: duckling
     networks:
       - traefik
