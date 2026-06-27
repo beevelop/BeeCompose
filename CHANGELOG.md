@@ -3,6 +3,12 @@
 All notable changes to BeeCompose will be documented in this file.
 
 
+## [26.6.0](https://github.com/beevelop/BeeCompose/compare/v26.3.5...v26.6.0) (2026-06-27)
+
+### CI/CD
+
+* bump actions/checkout from 6 to 7 ([#46](https://github.com/beevelop/BeeCompose/issues/46)) ([93a5ff7](https://github.com/beevelop/BeeCompose/commit/93a5ff7a741aa9bd5b92d320de4b79923ac30dda))
+
 ## [26.3.5](https://github.com/beevelop/BeeCompose/compare/v26.3.4...v26.3.5) (2026-03-18)
 
 ### CI/CD
