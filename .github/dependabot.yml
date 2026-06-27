@@ -18,7 +18,7 @@ updates:
       time: "06:00"
       timezone: "UTC"
     commit-message:
-      prefix: "CI"
+      prefix: "ci(deps)"
     labels:
       - "dependencies"
       - "github-actions"
@@ -39,7 +39,7 @@ updates:
       time: "06:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Traefik"
+      prefix: "chore(Traefik)"
     labels:
       - "dependencies"
       - "docker"
@@ -54,7 +54,7 @@ updates:
       time: "06:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Traefik-Tunnel"
+      prefix: "chore(Traefik-Tunnel)"
     labels:
       - "dependencies"
       - "docker"
@@ -69,7 +69,7 @@ updates:
       time: "06:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Cloudflared"
+      prefix: "chore(Cloudflared)"
     labels:
       - "dependencies"
       - "docker"
@@ -85,7 +85,7 @@ updates:
       time: "07:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Jira"
+      prefix: "chore(Jira)"
     labels:
       - "dependencies"
       - "docker"
@@ -100,7 +100,7 @@ updates:
       time: "07:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Confluence"
+      prefix: "chore(Confluence)"
     labels:
       - "dependencies"
       - "docker"
@@ -115,7 +115,7 @@ updates:
       time: "07:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Crowd"
+      prefix: "chore(Crowd)"
     labels:
       - "dependencies"
       - "docker"
@@ -131,7 +131,7 @@ updates:
       time: "05:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Claude Code"
+      prefix: "chore(Claude Code)"
     labels:
       - "dependencies"
       - "docker"
@@ -146,7 +146,7 @@ updates:
       time: "06:00"
       timezone: "UTC"
     commit-message:
-      prefix: "GitLab"
+      prefix: "chore(GitLab)"
     labels:
       - "dependencies"
       - "docker"
@@ -161,7 +161,7 @@ updates:
       time: "07:00"
       timezone: "UTC"
     commit-message:
-      prefix: "SonarQube"
+      prefix: "chore(SonarQube)"
     labels:
       - "dependencies"
       - "docker"
@@ -176,7 +176,7 @@ updates:
       time: "08:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Nexus"
+      prefix: "chore(Nexus)"
     labels:
       - "dependencies"
       - "docker"
@@ -191,7 +191,7 @@ updates:
       time: "09:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Registry"
+      prefix: "chore(Registry)"
     labels:
       - "dependencies"
       - "docker"
@@ -206,7 +206,7 @@ updates:
       time: "10:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Rundeck"
+      prefix: "chore(Rundeck)"
     labels:
       - "dependencies"
       - "docker"
@@ -222,7 +222,7 @@ updates:
       time: "06:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Sentry"
+      prefix: "chore(Sentry)"
     labels:
       - "dependencies"
       - "docker"
@@ -237,7 +237,7 @@ updates:
       time: "07:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Graylog"
+      prefix: "chore(Graylog)"
     labels:
       - "dependencies"
       - "docker"
@@ -252,7 +252,7 @@ updates:
       time: "08:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Zabbix"
+      prefix: "chore(Zabbix)"
     labels:
       - "dependencies"
       - "docker"
@@ -267,7 +267,7 @@ updates:
       time: "09:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Statping"
+      prefix: "chore(Statping)"
     labels:
       - "dependencies"
       - "docker"
@@ -282,7 +282,7 @@ updates:
       time: "10:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Cabot"
+      prefix: "chore(Cabot)"
     labels:
       - "dependencies"
       - "docker"
@@ -298,7 +298,7 @@ updates:
       time: "06:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Bitwarden"
+      prefix: "chore(Bitwarden)"
     labels:
       - "dependencies"
       - "docker"
@@ -313,7 +313,7 @@ updates:
       time: "07:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Keycloak"
+      prefix: "chore(Keycloak)"
     labels:
       - "dependencies"
       - "docker"
@@ -328,7 +328,7 @@ updates:
       time: "08:00"
       timezone: "UTC"
     commit-message:
-      prefix: "OpenVPN"
+      prefix: "chore(OpenVPN)"
     labels:
       - "dependencies"
       - "docker"
@@ -343,7 +343,7 @@ updates:
       time: "09:00"
       timezone: "UTC"
     commit-message:
-      prefix: "DependencyTrack"
+      prefix: "chore(DependencyTrack)"
     labels:
       - "dependencies"
       - "docker"
@@ -359,7 +359,7 @@ updates:
       time: "06:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Metabase"
+      prefix: "chore(Metabase)"
     labels:
       - "dependencies"
       - "docker"
@@ -374,7 +374,7 @@ updates:
       time: "07:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Redash"
+      prefix: "chore(Redash)"
     labels:
       - "dependencies"
       - "docker"
@@ -390,7 +390,7 @@ updates:
       time: "07:30"
       timezone: "UTC"
     commit-message:
-      prefix: "n8n"
+      prefix: "chore(n8n)"
     labels:
       - "dependencies"
       - "docker"
@@ -405,7 +405,7 @@ updates:
       time: "08:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Directus"
+      prefix: "chore(Directus)"
     labels:
       - "dependencies"
       - "docker"
@@ -420,7 +420,7 @@ updates:
       time: "09:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Huginn"
+      prefix: "chore(Huginn)"
     labels:
       - "dependencies"
       - "docker"
@@ -435,7 +435,7 @@ updates:
       time: "10:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Monica"
+      prefix: "chore(Monica)"
     labels:
       - "dependencies"
       - "docker"
@@ -450,7 +450,7 @@ updates:
       time: "11:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Weblate"
+      prefix: "chore(Weblate)"
     labels:
       - "dependencies"
       - "docker"
@@ -466,7 +466,7 @@ updates:
       time: "06:00"
       timezone: "UTC"
     commit-message:
-      prefix: "MinIO"
+      prefix: "chore(MinIO)"
     labels:
       - "dependencies"
       - "docker"
@@ -481,7 +481,7 @@ updates:
       time: "07:00"
       timezone: "UTC"
     commit-message:
-      prefix: "MySQL"
+      prefix: "chore(MySQL)"
     labels:
       - "dependencies"
       - "docker"
@@ -496,7 +496,7 @@ updates:
       time: "08:00"
       timezone: "UTC"
     commit-message:
-      prefix: "phpMyAdmin"
+      prefix: "chore(phpMyAdmin)"
     labels:
       - "dependencies"
       - "docker"
@@ -511,7 +511,7 @@ updates:
       time: "09:00"
       timezone: "UTC"
     commit-message:
-      prefix: "TUS"
+      prefix: "chore(TUS)"
     labels:
       - "dependencies"
       - "docker"
@@ -527,7 +527,7 @@ updates:
       time: "10:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Duckling"
+      prefix: "chore(Duckling)"
     labels:
       - "dependencies"
       - "docker"
@@ -541,7 +541,7 @@ updates:
       time: "11:00"
       timezone: "UTC"
     commit-message:
-      prefix: "Shields"
+      prefix: "chore(Shields)"
     labels:
       - "dependencies"
       - "docker"
