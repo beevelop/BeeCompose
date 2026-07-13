@@ -3,6 +3,12 @@
 All notable changes to BeeCompose will be documented in this file.
 
 
+## [26.7.0](https://github.com/beevelop/BeeCompose/compare/v26.6.0...v26.7.0) (2026-07-13)
+
+### Maintenance
+
+* **Sentry:** bump getsentry/vroom from 26.6.0 to 26.7.0 in /services/sentry ([#50](https://github.com/beevelop/BeeCompose/issues/50)) ([903e5a5](https://github.com/beevelop/BeeCompose/commit/903e5a578239a0b06a7b6f20a6d9d6a9dfdcefc3))
+
 ## [26.6.0](https://github.com/beevelop/BeeCompose/compare/v26.3.5...v26.6.0) (2026-06-27)
 
 ### CI/CD
