@@ -74,6 +74,8 @@ This service includes all required backing stores:
 
 **Note:** Elasticsearch requires `vm.max_map_count=262144`. See Troubleshooting section.
 
+MongoDB sets `GLIBC_TUNABLES=glibc.pthread.rseq=1` to disable TCMalloc's incompatible rseq path on newer Linux kernels ([SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)).
+
 See [Service Dependency Graph](../../docs/DEPENDENCIES.md) for details.
 
 ## Architecture

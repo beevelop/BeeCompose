@@ -863,8 +863,7 @@ jobs:
   # Each service runs in its own isolated job with unique project naming to prevent conflicts.
   test-services:
     name: Test - ${{ matrix.service }}
-    # MongoDB 8.0 cannot start on the newer kernels used by Ubuntu 26.04 (SERVER-121912).
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     needs: [discover, cve-scan-summary]
     # Run even if CVE scan is skipped, but not if it failed
     if: ${{ always() && needs.discover.result == 'success' && (needs.cve-scan-summary.result == 'success' || needs.cve-scan-summary.result == 'skipped') }}
