@@ -93,6 +93,9 @@ services:
     container_name: graylog-mongodb
     volumes:
       - mongo_data:/data/db
+    environment:
+      # Avoid TCMalloc's rseq incompatibility with Linux 6.19+ (SERVER-121912).
+      - GLIBC_TUNABLES=glibc.pthread.rseq=1
     networks:
       - graylog
     restart: unless-stopped
