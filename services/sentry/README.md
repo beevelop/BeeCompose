@@ -20,6 +20,8 @@ Sentry 26.x is a multi-service stack. All images are pulled from GitHub Containe
 | **Profiling** (feature-complete only) | vroom + seaweedfs + vroom-cleanup |
 | **Uptime** (feature-complete only) | uptime-checker |
 
+`kafka-init` creates the core error-processing and taskworker topics idempotently before Snuba services start.
+
 ### Profiles
 
 | Profile | Containers | RAM |
