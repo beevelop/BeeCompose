@@ -76,6 +76,8 @@ x-snuba-defaults: &snuba_defaults
       <<: *depends_on-healthy
     kafka:
       <<: *depends_on-healthy
+    kafka-init:
+      <<: *depends_on-healthy
     redis:
       <<: *depends_on-healthy
   environment:
@@ -248,13 +250,18 @@ services:
       - sentry
     command:
       - bash
-      - -c
+      - -ec
       - |
-        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists \
-          --topic taskworker --replication-factor 1 --partitions 1 && sleep infinity
+        rm -f /tmp/topics-ready
+        for topic in events event-replacements outcomes outcomes-billing group-attributes taskworker; do
+          kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists \
+            --topic "$$topic" --replication-factor 1 --partitions 1
+        done
+        touch /tmp/topics-ready
+        sleep infinity
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "kafka-topics --bootstrap-server kafka:9092 --describe --topic taskworker 2>/dev/null | grep -q taskworker" ]
+      test: [ "CMD-SHELL", "test -f /tmp/topics-ready" ]
       interval: 5s
       timeout: 10s
       retries: 10
@@ -778,7 +785,7 @@ services:
       - feature-complete
 
   symbolicator:
-    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.10.0}"
+    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.10.1}"
     container_name: sentry-symbolicator
     volumes:
       - sentry-symbolicator:/data
@@ -799,7 +806,7 @@ services:
         max-file: "50"
 
   symbolicator-cleanup:
-    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.10.0}"
+    image: "${SYMBOLICATOR_IMAGE:-ghcr.io/getsentry/symbolicator:26.10.1}"
     container_name: sentry-symbolicator-cleanup
     volumes:
       - sentry-symbolicator:/data
