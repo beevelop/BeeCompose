@@ -241,7 +241,7 @@ services:
         max-file: "50"
 
   kafka-init:
-    image: "${KAFKA_IMAGE:-confluentinc/cp-kafka:8.3.2}"
+    image: "${KAFKA_IMAGE:-confluentinc/cp-kafka:8.4.0}"
     container_name: sentry-kafka-init
     depends_on:
       kafka:
